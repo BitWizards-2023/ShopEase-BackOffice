@@ -1,0 +1,22 @@
+/* Glassmorphism for Cards */
+.glass-card {
+  background: rgba(
+    255,
+    255,
+    255,
+    0.5
+  ); /* Slightly opaque background for better readability */
+  border-radius: 16px; /* Rounded corners */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
+  backdrop-filter: blur(10px); /* Backdrop blur for the frosted glass effect */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  padding: 20px;
+  color: black; /* Keep the original text color for readability */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+}
+
+/* Hover effect for the glass cards */
+.glass-card:hover {
+  transform: scale(1.03); /* Slight scaling effect on hover */
+  box-shadow: 0 6px 40px rgba(0, 0, 0, 0.15); /* Slightly more pronounced shadow on hover */
+}

@@ -1,0 +1,40 @@
+/* App Container to align Sidebar, Header, and Footer */
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar should take up only a small width and remain fixed */
+.app-container .sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* Main Content should be next to the sidebar, taking full width minus sidebar width */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 250px); /* Full width minus sidebar */
+  height: 100vh;
+}
+
+/* Header should stay at the top */
+.header {
+  flex-shrink: 0;
+}
+
+/* Footer should stay at the bottom */
+.footer {
+  flex-shrink: 0;
+  margin-top: auto; /* This pushes the footer to the bottom */
+}
+
+/* Content Area (i.e., Dashboard) should fill the remaining space */
+.content-area {
+  flex-grow: 1;
+  padding: 20px; /* You can adjust padding as necessary */
+  overflow-y: auto; /* Scrollable content if needed */
+}

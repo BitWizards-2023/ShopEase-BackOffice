@@ -1,0 +1,15 @@
+/* Sidebar link default state */
+.sidebar-link {
+  color: black;
+  padding: 10px 15px; /* Add some padding for better spacing */
+  border-radius: 6px; /* Rounded corners */
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+/* Hover effect */
+.sidebar-link:hover {
+  background-color: #e0e0e0; /* Gray background on hover */
+  color: black; /* Keep the text black */
+  text-decoration: none; /* Remove underline */
+  transform: translateY(-1px); /* Slight movement on hover */
+}
