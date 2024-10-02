@@ -6,9 +6,11 @@ import Sidebar from "./components/sidebar/sidebar";
 import Dashboard from "./pages/dashboard/dashboard";
 import User from "./pages/userManagement/userManagement";
 import Product from "./pages/productManagement/productManagement";
+import Category from "./pages/categoryManagement/categoryManagement";
 import Order from "./pages/orderManagement/orderManagement";
 import Inventory from "./pages/inventoryManagement/inventoryManagement";
 import Vendor from "./pages/vendorManagement/vendorManagement";
+import UserProfile from "./components/userProfile/userProfile";
 import LoginForm from "./components/login/login"; // Import your LoginForm
 import SignupForm from "./components/signup/signup"; // Import your SignupForm
 
@@ -37,9 +39,11 @@ function App() {
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/user" element={<User />} />
                       <Route path="/product" element={<Product />} />
+                      <Route path="/category" element={<Category />} />
                       <Route path="/order" element={<Order />} />
                       <Route path="/inventory" element={<Inventory />} />
                       <Route path="/vendor" element={<Vendor />} />
+                      <Route path="/user-profile" element={<UserProfile />} />
                     </Routes>
                   </div>
                   <Footer />

@@ -1,0 +1,14 @@
+/* userProfile.css */
+.glass-card {
+  background: rgba(255, 255, 255, 0.1); /* Light transparency */
+  border-radius: 15px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px); /* Frosted glass blur */
+  -webkit-backdrop-filter: blur(10px); /* Support for older browsers */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 20px;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+}
