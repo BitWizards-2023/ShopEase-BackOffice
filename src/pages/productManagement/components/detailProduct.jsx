@@ -13,7 +13,7 @@ const ProductDetails = ({ show, onHide, product }) => {
         <Row>
           <Col md={6}>
             <img
-              src={product.image}
+              src={product.images[0]}
               alt={product.name}
               style={{ width: "100%" }}
             />

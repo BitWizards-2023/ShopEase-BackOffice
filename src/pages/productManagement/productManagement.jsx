@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -17,59 +17,26 @@ import {
   FaTimes,
   FaEllipsisV,
 } from "react-icons/fa";
-import AddProduct from "./components/AddProduct"; // Separate Add Product component
-import EditProduct from "./components/EditProduct"; // Separate Edit Product component
-import ProductDetails from "./components/detailProduct"; // Separate Product Details component
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchProducts,
+  addProduct,
+  deleteProduct,
+  updateProduct,
+  activateProduct,
+  deactivateProduct,
+} from "../../features/products/productSlice";
+import { fetchCategories, fetchCategoryById } from "../../features/category/categorySlice"; // Import category actions
+import AddProduct from "./components/addProduct";
+import EditProduct from "./components/editProduct";
+import ProductDetails from "./components/detailProduct";
 
 export default function ProductManagement() {
-  // Mock data for products
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: "Laptop",
-      category: "Electronics",
-      price: 1000,
-      image: "https://via.placeholder.com/100",
-      description: "High-performance laptop for professionals.",
-      status: true,
-    },
-    {
-      id: 2,
-      name: "Smartphone",
-      category: "Electronics",
-      price: 500,
-      image: "https://via.placeholder.com/100",
-      description: "Latest smartphone with advanced features.",
-      status: false,
-    },
-    {
-      id: 3,
-      name: "Tablet",
-      category: "Electronics",
-      price: 300,
-      image: "https://via.placeholder.com/100",
-      description: "Lightweight tablet for entertainment on the go.",
-      status: true,
-    },
-    {
-      id: 4,
-      name: "Headphones",
-      category: "Accessories",
-      price: 150,
-      image: "https://via.placeholder.com/100",
-      description: "Noise-cancelling headphones for immersive sound.",
-      status: true,
-    },
-    {
-      id: 5,
-      name: "Smartwatch",
-      category: "Accessories",
-      price: 200,
-      image: "https://via.placeholder.com/100",
-      description: "Smartwatch with fitness tracking and notifications.",
-      status: false,
-    },
-  ]);
+  const dispatch = useDispatch();
+
+  // Fetch products and categories from Redux store
+  const { products = [], status: productStatus } = useSelector((state) => state.products);  // Initialize products as empty array
+  const { categories = [], status: categoryStatus } = useSelector((state) => state.category); // Fetch categories
 
   // State for handling modals and product details
   const [showAddModal, setShowAddModal] = useState(false);
@@ -79,58 +46,77 @@ export default function ProductManagement() {
   const [productDetails, setProductDetails] = useState(null); // State to store product details
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
 
+  useEffect(() => {
+    if (productStatus === "idle") {
+      dispatch(fetchProducts()); // Fetch products from backend on mount
+    }
+    if (categoryStatus === "idle") {
+      dispatch(fetchCategories()); // Fetch categories on mount
+    }
+  }, [dispatch, productStatus, categoryStatus]);
+
   // Function to handle adding a new product
-  const handleAddProduct = (newProduct) => {
-    setProducts([...products, { ...newProduct, id: products.length + 1 }]);
+  const handleAddProduct = async (newProduct) => {
+    await dispatch(addProduct(newProduct));
+    setShowAddModal(false);
   };
 
-  // Function to handle opening the edit modal with the selected product
-  const handleShowEditModal = (product) => {
-    setEditProduct(product);
-    setShowEditModal(true);
-  };
-
-  // Function to handle showing the product details modal
-  const handleShowDetailsModal = (product) => {
-    setProductDetails(product);
-    setShowDetailsModal(true);
-  };
-
-  // Function to save edited product
-  const handleSaveEditProduct = (updatedProduct) => {
-    setProducts(
-      products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
-    );
+  // Function to handle editing a product
+  const handleSaveEditProduct = async (updatedProduct) => {
+    await dispatch(updateProduct({ id: updatedProduct.id, updatedProduct }));
     setShowEditModal(false);
   };
 
-  // Function to delete a product
-  const handleDeleteProduct = (id) => {
-    setProducts(products.filter((p) => p.id !== id));
+  // Function to handle deleting a product
+  const handleDeleteProduct = async (id) => {
+    try {
+      console.log("Deleting product with ID:", id);
+      await dispatch(deleteProduct(id));
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
   };
 
-  // Function to toggle product status (active/inactive)
-  const handleToggleStatus = (id) => {
-    setProducts(
-      products.map((product) =>
-        product.id === id ? { ...product, status: !product.status } : product
-      )
-    );
+
+  // Function to toggle product status (activate/deactivate)
+  const handleToggleStatus = async (id, isActive) => {
+    try {
+      console.log("Toggling status for product with ID:", id, "isActive:", isActive);
+      if (isActive) {
+        await dispatch(deactivateProduct(id)); // Deactivate if currently active
+      } else {
+        await dispatch(activateProduct(id)); // Activate if currently inactive
+      }
+    } catch (error) {
+      console.error("Error toggling product status:", error);
+    }
+  };
+
+
+  // Safeguard: Ensure categories is an array and category name exists before using .toLowerCase()
+  const filteredProducts = Array.isArray(products) && products.length > 0
+    ? products.filter((product) =>
+      product.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    : [];
+
+  // Function to get the category name by ID
+  const getCategoryName = (categoryId) => {
+    const category = categories.find((cat) => cat.id === categoryId);
+    return category ? category.name : "Unknown Category";
   };
 
   // Calculate important statistics
-  const totalProducts = products.length;
-  const activeProducts = products.filter((product) => product.status).length;
-  const inactiveProducts = products.filter((product) => !product.status).length;
-  const totalStockValue = products.reduce(
-    (acc, product) => acc + product.price,
-    0
-  );
-
-  // Filtered products based on search query
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const totalProducts = Array.isArray(products) ? products.length : 0;
+  const activeProducts = Array.isArray(products)
+    ? products.filter((product) => product.isActive).length
+    : 0;
+  const inactiveProducts = Array.isArray(products)
+    ? products.filter((product) => !product.isActive).length
+    : 0;
+  const totalStockValue = Array.isArray(products)
+    ? products.reduce((acc, product) => acc + product.price, 0)
+    : 0;
 
   return (
     <div>
@@ -233,17 +219,24 @@ export default function ProductManagement() {
                       <tr key={product.id}>
                         <td>{product.id}</td>
                         <td>{product.name}</td>
-                        <td>{product.category}</td>
+                        {/* Map categoryId to category name */}
+                        <td>
+                          {product.categoryIds.map((categoryId) => (
+                            <span key={categoryId}>
+                              {getCategoryName(categoryId)}
+                            </span>
+                          ))}
+                        </td>
                         <td>${product.price}</td>
                         <td>
                           <img
-                            src={product.image}
+                            src={product.images[0]}
                             alt={product.name}
                             style={{ width: "50px", height: "50px" }}
                           />
                         </td>
                         <td>
-                          {product.status ? (
+                          {product.isActive ? (
                             <span className="text-success">
                               <FaCheck className="me-1" />
                               Active
@@ -264,11 +257,15 @@ export default function ProductManagement() {
                             align="end"
                           >
                             <Dropdown.Item
-                              onClick={() => handleShowEditModal(product)}
+                              onClick={() => {
+                                setEditProduct(product);  // Set the selected product to edit
+                                setShowEditModal(true);   // Show the edit modal
+                              }}
                             >
                               <FaEdit className="me-2" />
                               Edit
                             </Dropdown.Item>
+
                             <Dropdown.Item
                               onClick={() => handleDeleteProduct(product.id)}
                             >
@@ -276,9 +273,11 @@ export default function ProductManagement() {
                               Delete
                             </Dropdown.Item>
                             <Dropdown.Item
-                              onClick={() => handleToggleStatus(product.id)}
+                              onClick={() =>
+                                handleToggleStatus(product.id, product.isActive)
+                              }
                             >
-                              {product.status ? (
+                              {product.isActive ? (
                                 <>
                                   <FaTimes className="me-2" />
                                   Deactivate
@@ -291,10 +290,14 @@ export default function ProductManagement() {
                               )}
                             </Dropdown.Item>
                             <Dropdown.Item
-                              onClick={() => handleShowDetailsModal(product)}
+                              onClick={() => {
+                                setProductDetails(product);  // Set the selected product to display
+                                setShowDetailsModal(true);   // Show the details modal
+                              }}
                             >
                               View Details
                             </Dropdown.Item>
+
                           </DropdownButton>
                         </td>
                       </tr>
@@ -326,6 +329,7 @@ export default function ProductManagement() {
         onHide={() => setShowEditModal(false)}
         product={editProduct}
         onSave={handleSaveEditProduct}
+        categories={categories} // Pass categories here
       />
 
       {/* Product Details Modal */}

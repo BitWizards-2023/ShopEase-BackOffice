@@ -44,6 +44,22 @@ export const fetchCategories = createAsyncThunk(
     }
 );
 
+// Async thunk to fetch a category by its ID
+export const fetchCategoryById = createAsyncThunk(
+    'category/fetchCategoryById',
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`/api/Category/${id}`);
+            return response.data.data;
+        } catch (error) {
+            if (!error.response) {
+                throw error;
+            }
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 // Async thunk to update a category
 export const updateCategory = createAsyncThunk(
     'category/updateCategory',
@@ -197,6 +213,19 @@ const categorySlice = createSlice({
             })
 
             .addCase(updateCategory.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message;
+            })
+        
+            // Handle fetching category by ID
+            .addCase(fetchCategoryById.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(fetchCategoryById.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.categoryById[action.meta.arg] = action.payload;
+            })
+            .addCase(fetchCategoryById.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message;
             });
