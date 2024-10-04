@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import { updateCategory, fetchCategories } from "../../../features/category/categorySlice"; // Import the update action
 
-const EditCategory = ({ show, onHide, category, onSave }) => {
+const EditCategory = ({ show, onHide, category }) => {
   const [updatedCategory, setUpdatedCategory] = useState(category);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     setUpdatedCategory(category);
@@ -14,10 +17,26 @@ const EditCategory = ({ show, onHide, category, onSave }) => {
     setUpdatedCategory({ ...updatedCategory, [name]: value });
   };
 
-  const handleSave = () => {
-    onSave(updatedCategory);
-    onHide();
+  const handleSave = async () => {
+    const { id, name, isActive, imageUrl } = updatedCategory;
+
+    try {
+      // Dispatch the updateCategory action to update the category in the backend
+      await dispatch(updateCategory({ id, name, isActive, imageUrl }));
+
+      // After update, refetch the categories
+      await dispatch(fetchCategories());
+
+      // Call onSave only after the category is successfully updated
+      // onSave(updatedCategory);
+
+      // Hide the modal after successful save
+      onHide();
+    } catch (error) {
+      console.error("Error updating the category: ", error);
+    }
   };
+
 
   return (
     <Modal show={show} onHide={onHide}>
@@ -36,15 +55,14 @@ const EditCategory = ({ show, onHide, category, onSave }) => {
               placeholder="Enter category name"
             />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="categoryDescription">
-            <Form.Label>Description</Form.Label>
+          <Form.Group className="mb-3" controlId="categoryImageUrl">
+            <Form.Label>Category Image URL</Form.Label>
             <Form.Control
-              as="textarea"
-              rows={3}
-              name="description"
-              value={updatedCategory?.description || ""}
+              type="text"
+              name="imageUrl"
+              value={updatedCategory?.imageUrl || ""}
               onChange={handleInputChange}
-              placeholder="Enter category description"
+              placeholder="Enter image URL"
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="categoryStatus">
@@ -52,11 +70,11 @@ const EditCategory = ({ show, onHide, category, onSave }) => {
               type="switch"
               id="custom-switch"
               label="Active"
-              checked={updatedCategory?.status || false}
+              checked={updatedCategory?.isActive || false}
               onChange={(e) =>
                 setUpdatedCategory({
                   ...updatedCategory,
-                  status: e.target.checked,
+                  isActive: e.target.checked,
                 })
               }
             />

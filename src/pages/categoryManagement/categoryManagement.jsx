@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -17,38 +17,19 @@ import {
   FaTimes,
   FaEllipsisV,
 } from "react-icons/fa";
+import { useSelector, useDispatch } from "react-redux";
 import AddCategory from "./components/addCategory"; // Separate Add Category component
 import EditCategory from "./components/editCategory"; // Separate Edit Category component
 import CategoryDetails from "./components/detailCategory"; // Separate Category Details component
+import { fetchCategories, deleteCategory } from "../../features/category/categorySlice"; // Redux actions
 
 export default function CategoryManagement() {
-  // Mock data for categories
-  const [categories, setCategories] = useState([
-    {
-      id: 1,
-      name: "Electronics",
-      description: "Devices and gadgets",
-      status: true,
-    },
-    {
-      id: 2,
-      name: "Accessories",
-      description: "Various accessories like headphones and cases",
-      status: false,
-    },
-    {
-      id: 3,
-      name: "Home Appliances",
-      description: "Appliances for home use",
-      status: true,
-    },
-    {
-      id: 4,
-      name: "Books",
-      description: "Various kinds of books and literature",
-      status: true,
-    },
-  ]);
+  const dispatch = useDispatch();
+
+  // Get categories from Redux store
+  const categories = useSelector((state) => state.category.categories);
+  const status = useSelector((state) => state.category.status);
+  const error = useSelector((state) => state.category.error);
 
   // State for handling modals and category details
   const [showAddModal, setShowAddModal] = useState(false);
@@ -58,12 +39,16 @@ export default function CategoryManagement() {
   const [categoryDetails, setCategoryDetails] = useState(null);
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
 
-  // Function to handle adding a new category
-  const handleAddCategory = (newCategory) => {
-    setCategories([
-      ...categories,
-      { ...newCategory, id: categories.length + 1 },
-    ]);
+  // Fetch categories from backend when component loads
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchCategories());
+    }
+  }, [status, dispatch]);
+
+  // Function to handle deleting a category
+  const handleDeleteCategory = (id) => {
+    dispatch(deleteCategory(id));
   };
 
   // Function to handle opening the edit modal with the selected category
@@ -78,43 +63,23 @@ export default function CategoryManagement() {
     setShowDetailsModal(true);
   };
 
-  // Function to save edited category
-  const handleSaveEditCategory = (updatedCategory) => {
-    setCategories(
-      categories.map((c) => (c.id === updatedCategory.id ? updatedCategory : c))
-    );
-    setShowEditModal(false);
-  };
+  // Safeguard: Ensure categories is an array and category name exists before using .toLowerCase()
+  const filteredCategories = Array.isArray(categories)
+    ? categories.filter((category) =>
+      category.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    : [];
 
-  // Function to delete a category
-  const handleDeleteCategory = (id) => {
-    setCategories(categories.filter((c) => c.id !== id));
-  };
 
-  // Function to toggle category status (active/inactive)
-  const handleToggleStatus = (id) => {
-    setCategories(
-      categories.map((category) =>
-        category.id === id
-          ? { ...category, status: !category.status }
-          : category
-      )
-    );
-  };
+  // Calculate important statistics (with safeguard)
+  const totalCategories = Array.isArray(categories) ? categories.length : 0;
+  const activeCategories = Array.isArray(categories)
+    ? categories.filter((category) => category.isActive).length
+    : 0;
+  const inactiveCategories = Array.isArray(categories)
+    ? categories.filter((category) => !category.isActive).length
+    : 0;
 
-  // Calculate important statistics
-  const totalCategories = categories.length;
-  const activeCategories = categories.filter(
-    (category) => category.status
-  ).length;
-  const inactiveCategories = categories.filter(
-    (category) => !category.status
-  ).length;
-
-  // Filtered categories based on search query
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div>
@@ -189,25 +154,34 @@ export default function CategoryManagement() {
         <Col md={12}>
           <Card className="mb-4">
             <Card.Body>
+              {error && <p className="text-danger">Error: {error}</p>}
               <Table striped bordered hover responsive>
                 <thead>
                   <tr>
                     <th>Category ID</th>
                     <th>Category Name</th>
-                    <th>Description</th>
+                    <th>Image</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredCategories.length > 0 ? (
-                    filteredCategories.map((category) => (
+                    filteredCategories.map((category,index) => (
                       <tr key={category.id}>
-                        <td>{category.id}</td>
+                        <td>{index+1}</td>
                         <td>{category.name}</td>
-                        <td>{category.description}</td>
                         <td>
-                          {category.status ? (
+                          {category.imageUrl ? (
+                            <a href={category.imageUrl} target="_blank" rel="noreferrer">
+                              View Image
+                            </a>
+                          ) : (
+                            "No Image"
+                          )}
+                        </td>
+                        <td>
+                          {category.isActive ? (
                             <span className="text-success">
                               <FaCheck className="me-1" />
                               Active
@@ -239,10 +213,8 @@ export default function CategoryManagement() {
                               <FaTrash className="me-2" />
                               Delete
                             </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() => handleToggleStatus(category.id)}
-                            >
-                              {category.status ? (
+                            {/* <Dropdown.Item>
+                              {category.isActive ? (
                                 <>
                                   <FaTimes className="me-2" />
                                   Deactivate
@@ -258,7 +230,7 @@ export default function CategoryManagement() {
                               onClick={() => handleShowDetailsModal(category)}
                             >
                               View Details
-                            </Dropdown.Item>
+                            </Dropdown.Item> */}
                           </DropdownButton>
                         </td>
                       </tr>
@@ -281,7 +253,6 @@ export default function CategoryManagement() {
       <AddCategory
         show={showAddModal}
         onHide={() => setShowAddModal(false)}
-        onSave={handleAddCategory}
       />
 
       {/* Edit Category Modal */}
@@ -289,7 +260,6 @@ export default function CategoryManagement() {
         show={showEditModal}
         onHide={() => setShowEditModal(false)}
         category={editCategory}
-        onSave={handleSaveEditCategory}
       />
 
       {/* Category Details Modal */}

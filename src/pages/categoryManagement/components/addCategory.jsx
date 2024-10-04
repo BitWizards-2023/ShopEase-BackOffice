@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
+import { useDispatch, useSelector } from 'react-redux';
+import { uploadImage, addCategory } from '../../../features/category/categorySlice';
 
-const AddCategory = ({ show, onHide, onSave }) => {
+const AddCategory = ({ show, onHide }) => {
+  const dispatch = useDispatch();
+  const imageUrl = useSelector((state) => state.category.imageUrl);
+
   const [newCategory, setNewCategory] = useState({
     name: "",
-    description: "",
     status: true,
+    image: null,
   });
 
   // Handle input change
@@ -14,9 +19,24 @@ const AddCategory = ({ show, onHide, onSave }) => {
     setNewCategory({ ...newCategory, [name]: value });
   };
 
+  // Handle image change
+  const handleImageChange = (e) => {
+    setNewCategory({ ...newCategory, image: e.target.files[0] });
+  };
+
   const handleSave = () => {
-    onSave(newCategory);
-    onHide();
+    // Step 1: Upload the image
+    dispatch(uploadImage(newCategory.image)).then(() => {
+      // Step 2: After image is uploaded, create the category with the image URL
+      dispatch(
+        addCategory({
+          name: newCategory.name,
+          isActive: newCategory.status,
+          imageUrl,
+        })
+      );
+      onHide();
+    });
   };
 
   return (
@@ -36,17 +56,18 @@ const AddCategory = ({ show, onHide, onSave }) => {
               placeholder="Enter category name"
             />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="categoryDescription">
-            <Form.Label>Description</Form.Label>
+
+          {/* Image Upload Field */}
+          <Form.Group className="mb-3" controlId="categoryImage">
+            <Form.Label>Category Image</Form.Label>
             <Form.Control
-              as="textarea"
-              rows={3}
-              name="description"
-              value={newCategory.description}
-              onChange={handleInputChange}
-              placeholder="Enter category description"
+              type="file"
+              name="image"
+              accept="image/*"
+              onChange={handleImageChange}
             />
           </Form.Group>
+
           <Form.Group className="mb-3" controlId="categoryStatus">
             <Form.Check
               type="switch"
