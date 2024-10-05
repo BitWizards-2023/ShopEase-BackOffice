@@ -1,4 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchUsers,
+  deleteUser,
+  activateUser,
+  approveUser,
+} from "../../features/users/userSlice";
 import {
   Table,
   Button,
@@ -10,105 +17,36 @@ import {
   DropdownButton,
 } from "react-bootstrap";
 import { FaPlus, FaBell, FaEdit, FaTrash, FaEye } from "react-icons/fa";
-import AddUser from "./components/addUser"; // Separate Add User component
-import EditUser from "./components/editUser"; // Separate Edit User component
-import Notifications from "./components/notifications"; // Separate Notifications component
-import UserDetailModal from "./components/detailUser"; // User Detail Component
+import AddUser from "./components/addUser";
+import EditUser from "./components/editUser";
+import Notifications from "./components/notifications";
+import UserDetailModal from "./components/detailUser";
 
 export default function UserManagement() {
-  // Mock data for users
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      username: "john_doe",
-      firstName: "John",
-      lastName: "Doe",
-      role: "Administrator",
-      email: "john@example.com",
-      phoneNumber: "123-456-7890",
-      profile_pic: "https://example.com/john_profile_pic.jpg",
-      address: {
-        street: "123 Main St",
-        city: "New York",
-        state: "NY",
-        postalCode: "10001",
-        country: "USA",
-      },
-    },
-    {
-      id: 2,
-      username: "jane_smith",
-      firstName: "Jane",
-      lastName: "Smith",
-      role: "Vendor",
-      email: "jane@example.com",
-      phoneNumber: "234-567-8901",
-      profile_pic: "https://example.com/jane_profile_pic.jpg",
-      address: {
-        street: "456 Market St",
-        city: "San Francisco",
-        state: "CA",
-        postalCode: "94105",
-        country: "USA",
-      },
-    },
-    {
-      id: 3,
-      username: "alex_johnson",
-      firstName: "Alex",
-      lastName: "Johnson",
-      role: "CSR",
-      email: "alex@example.com",
-      phoneNumber: "345-678-9012",
-      profile_pic: "https://example.com/alex_profile_pic.jpg",
-      address: {
-        street: "789 Broadway",
-        city: "Los Angeles",
-        state: "CA",
-        postalCode: "90001",
-        country: "USA",
-      },
-    },
-  ]);
-
-  // Notifications
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: "User John Doe has been promoted to Administrator." },
-    { id: 2, message: "Vendor Jane Smith has added a new product." },
-  ]);
+  const dispatch = useDispatch();
+  const { users, status, error } = useSelector((state) => state.users);
 
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [showUserDetailModal, setShowUserDetailModal] = useState(false); // State for UserDetailModal
-  const [detailUser, setDetailUser] = useState(null); // State for the selected user for detail view
-  const [searchQuery, setSearchQuery] = useState(""); // Search query state
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
+  const [detailUser, setDetailUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Add a new user
-  const handleAddUser = (newUser) => {
-    setUsers([...users, { ...newUser, id: users.length + 1 }]);
-    setNotifications([
-      ...notifications,
-      {
-        id: notifications.length + 1,
-        message: `User ${newUser.firstName} ${newUser.lastName} has been added.`,
-      },
-    ]);
-  };
+  // Log the Redux state for debugging
+  useEffect(() => {
+    console.log("Users in Redux state: ", users); // Check if users are being stored in the Redux state
+  }, [users]);
 
-  // Edit an existing user
-  const handleEditUser = (updatedUser) => {
-    setUsers(users.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
-    setShowEditUserModal(false);
-  };
+  // Fetch users on component mount
+  useEffect(() => {
+    if (status === "idle") {
+      console.log("Dispatching fetchUsers"); // Ensure that fetchUsers is being called
+      dispatch(fetchUsers());
+    }
+  }, [status, dispatch]);
 
-  // View User Details
-  const handleViewUserDetails = (user) => {
-    setDetailUser(user);
-    setShowUserDetailModal(true);
-  };
-
-  // Calculate statistics for cards
+  // Calculate statistics
   const totalUsers = users.length;
   const totalAdmins = users.filter(
     (user) => user.role === "Administrator"
@@ -116,16 +54,29 @@ export default function UserManagement() {
   const totalVendors = users.filter((user) => user.role === "Vendor").length;
   const totalCSRs = users.filter((user) => user.role === "CSR").length;
 
-  // Filtered users based on search query
+  // Search logic
   const filteredUsers = users.filter(
     (user) =>
       user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phoneNumber.includes(searchQuery)
+      user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Delete user handler
+  const handleDeleteUser = (id) => {
+    dispatch(deleteUser(id));
+  };
+
+  // Activate user handler
+  const handleActivateUser = (id) => {
+    dispatch(activateUser(id));
+  };
+
+  // Approve user handler
+  const handleApproveUser = (id) => {
+    dispatch(approveUser(id));
+  };
 
   return (
     <div>
@@ -134,7 +85,7 @@ export default function UserManagement() {
         <span className="me-2">User Management</span>
 
         {/* Notifications Icon */}
-        <Notifications notifications={notifications} />
+        <Notifications notifications={[]} />
 
         {/* Add User Button */}
         <div className="ms-auto">
@@ -264,15 +215,25 @@ export default function UserManagement() {
                             <FaEdit className="me-2" />
                             Edit
                           </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleViewUserDetails(user)}
-                          >
+                          <Dropdown.Item>
                             <FaEye className="me-2" />
                             View More
                           </Dropdown.Item>
-                          <Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
                             <FaTrash className="me-2" />
                             Delete
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => handleActivateUser(user.id)}
+                          >
+                            Activate
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => handleApproveUser(user.id)}
+                          >
+                            Approve
                           </Dropdown.Item>
                         </DropdownButton>
                       </td>
@@ -285,24 +246,18 @@ export default function UserManagement() {
         </Col>
       </Row>
 
-      {/* Add User Modal */}
+      {/* Modals for Add, Edit, and Detail */}
       <AddUser
         show={showAddUserModal}
         onHide={() => setShowAddUserModal(false)}
-        onSave={handleAddUser}
       />
-
-      {/* Edit User Modal */}
       {editUser && (
         <EditUser
           show={showEditUserModal}
           onHide={() => setShowEditUserModal(false)}
           user={editUser}
-          onSave={handleEditUser}
         />
       )}
-
-      {/* User Detail Modal */}
       {detailUser && (
         <UserDetailModal
           show={showUserDetailModal}
