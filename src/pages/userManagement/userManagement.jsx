@@ -5,6 +5,8 @@ import {
   deleteUser,
   activateUser,
   approveUser,
+  updateUser,
+  registerUser, // Import registerUser to handle adding new users
 } from "../../features/users/userSlice";
 import {
   Table,
@@ -16,7 +18,7 @@ import {
   Dropdown,
   DropdownButton,
 } from "react-bootstrap";
-import { FaPlus, FaBell, FaEdit, FaTrash, FaEye } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaEye } from "react-icons/fa";
 import AddUser from "./components/addUser";
 import EditUser from "./components/editUser";
 import Notifications from "./components/notifications";
@@ -33,35 +35,29 @@ export default function UserManagement() {
   const [detailUser, setDetailUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Log the Redux state for debugging
-  useEffect(() => {
-    console.log("Users in Redux state: ", users); // Check if users are being stored in the Redux state
-  }, [users]);
-
   // Fetch users on component mount
   useEffect(() => {
     if (status === "idle") {
-      console.log("Dispatching fetchUsers"); // Ensure that fetchUsers is being called
       dispatch(fetchUsers());
     }
   }, [status, dispatch]);
 
-  // Calculate statistics
-  const totalUsers = users.length;
-  const totalAdmins = users.filter(
-    (user) => user.role === "Administrator"
-  ).length;
-  const totalVendors = users.filter((user) => user.role === "Vendor").length;
-  const totalCSRs = users.filter((user) => user.role === "CSR").length;
+  // Handle adding a new user
+  const handleAddUser = async (newUser) => {
+    await dispatch(registerUser(newUser));
+    await dispatch(fetchUsers()); // Fetch users again after adding a new user
+    setShowAddUserModal(false); // Close modal after adding the user
+  };
 
-  // Search logic
-  const filteredUsers = users.filter(
-    (user) =>
-      user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleSaveEditUser = async (updatedUser) => {
+    try {
+      await dispatch(updateUser({ id: updatedUser.id, userData: updatedUser }));
+      await dispatch(fetchUsers()); // Refetch users after updating
+      setShowEditUserModal(false); // Close the modal
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  };
 
   // Delete user handler
   const handleDeleteUser = (id) => {
@@ -77,6 +73,27 @@ export default function UserManagement() {
   const handleApproveUser = (id) => {
     dispatch(approveUser(id));
   };
+
+  // Calculate statistics
+  const totalUsers = users.length;
+  const totalAdmins = users.filter(
+    (user) => user.role === "Administrator"
+  ).length;
+  const totalVendors = users.filter((user) => user.role === "Vendor").length;
+  const totalCSRs = users.filter((user) => user.role === "CSR").length;
+
+  // Search logic
+  const filteredUsers = users.filter(
+    (user) =>
+      (user.firstName?.toLowerCase() || "").includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (user.lastName?.toLowerCase() || "").includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (user.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (user.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div>
@@ -250,12 +267,14 @@ export default function UserManagement() {
       <AddUser
         show={showAddUserModal}
         onHide={() => setShowAddUserModal(false)}
+        onSave={handleAddUser} // Bind the handleAddUser function
       />
       {editUser && (
         <EditUser
           show={showEditUserModal}
           onHide={() => setShowEditUserModal(false)}
           user={editUser}
+          onSave={handleSaveEditUser} // This is the function that needs to be passed down
         />
       )}
       {detailUser && (

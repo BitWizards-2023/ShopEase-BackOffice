@@ -7,6 +7,7 @@ const AddUser = ({ show, onHide, onSave }) => {
     firstName: "",
     lastName: "",
     email: "",
+    password: "", // Include password field for registration
     phoneNumber: "",
     profile_pic: "",
     role: "Vendor", // Default role
@@ -36,8 +37,8 @@ const AddUser = ({ show, onHide, onSave }) => {
 
   // Handle saving the new user
   const handleSave = () => {
-    onSave(newUser);
-    onHide();
+    onSave(newUser); // Pass the new user data to the parent component for saving
+    onHide(); // Close the modal
   };
 
   return (
@@ -96,6 +97,18 @@ const AddUser = ({ show, onHide, onSave }) => {
               value={newUser.email}
               onChange={handleInputChange}
               placeholder="Enter email"
+            />
+          </Form.Group>
+
+          {/* Password */}
+          <Form.Group className="mb-3">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              name="password"
+              value={newUser.password}
+              onChange={handleInputChange}
+              placeholder="Enter password"
             />
           </Form.Group>
 

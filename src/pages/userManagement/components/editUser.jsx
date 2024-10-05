@@ -1,42 +1,56 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 
-const EditUser = ({ show, onHide, user, onSave }) => {
-  // Initialize state with the passed user data
-  const [editedUser, setEditedUser] = useState(user);
+const EditUser = ({ show, onHide, onSave, user }) => {
+  const [updatedUser, setUpdatedUser] = useState({
+    username: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "", // Include the password field for updating
+    phoneNumber: "",
+    profile_pic: "",
+    role: "Vendor", // Default role
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
+    },
+  });
 
-  // Sync the state with the user prop on initial load or when the modal reopens
   useEffect(() => {
-    setEditedUser(user);
+    if (user) {
+      setUpdatedUser(user); // Pre-fill the form with existing user details
+    }
   }, [user]);
 
   // Handle input changes for general fields
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditedUser({ ...editedUser, [name]: value });
+    setUpdatedUser({ ...updatedUser, [name]: value });
   };
 
   // Handle input changes for address fields
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
-    setEditedUser({
-      ...editedUser,
-      address: { ...editedUser.address, [name]: value },
+    setUpdatedUser({
+      ...updatedUser,
+      address: { ...updatedUser.address, [name]: value },
     });
   };
 
-  // Handle saving the changes
+  // Handle saving the updated user
   const handleSave = () => {
-    onSave(editedUser);
-    onHide();
+    onSave(updatedUser); // Call the onSave function passed down from the parent
+    onHide(); // Close modal after saving
   };
 
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>
-          Edit User - {editedUser?.firstName} {editedUser?.lastName}
-        </Modal.Title>
+        <Modal.Title>Edit User</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
@@ -46,8 +60,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
             <Form.Control
               type="text"
               name="username"
-              value={editedUser.username || ""}
+              value={updatedUser.username}
               onChange={handleInputChange}
+              placeholder="Enter username"
             />
           </Form.Group>
 
@@ -59,8 +74,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
                 <Form.Control
                   type="text"
                   name="firstName"
-                  value={editedUser.firstName || ""}
+                  value={updatedUser.firstName}
                   onChange={handleInputChange}
+                  placeholder="Enter first name"
                 />
               </Form.Group>
             </Col>
@@ -70,8 +86,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
                 <Form.Control
                   type="text"
                   name="lastName"
-                  value={editedUser.lastName || ""}
+                  value={updatedUser.lastName}
                   onChange={handleInputChange}
+                  placeholder="Enter last name"
                 />
               </Form.Group>
             </Col>
@@ -83,8 +100,21 @@ const EditUser = ({ show, onHide, user, onSave }) => {
             <Form.Control
               type="email"
               name="email"
-              value={editedUser.email || ""}
+              value={updatedUser.email}
               onChange={handleInputChange}
+              placeholder="Enter email"
+            />
+          </Form.Group>
+
+          {/* Password */}
+          <Form.Group className="mb-3">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              name="password"
+              value={updatedUser.password}
+              onChange={handleInputChange}
+              placeholder="Enter new password"
             />
           </Form.Group>
 
@@ -94,8 +124,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
             <Form.Control
               type="text"
               name="phoneNumber"
-              value={editedUser.phoneNumber || ""}
+              value={updatedUser.phoneNumber}
               onChange={handleInputChange}
+              placeholder="Enter phone number"
             />
           </Form.Group>
 
@@ -105,8 +136,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
             <Form.Control
               type="text"
               name="profile_pic"
-              value={editedUser.profile_pic || ""}
+              value={updatedUser.profile_pic}
               onChange={handleInputChange}
+              placeholder="Enter profile picture URL"
             />
           </Form.Group>
 
@@ -115,7 +147,7 @@ const EditUser = ({ show, onHide, user, onSave }) => {
             <Form.Label>Role</Form.Label>
             <Form.Select
               name="role"
-              value={editedUser.role || ""}
+              value={updatedUser.role}
               onChange={handleInputChange}
             >
               <option>Administrator</option>
@@ -133,8 +165,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
                 <Form.Control
                   type="text"
                   name="street"
-                  value={editedUser?.address?.street || ""}
+                  value={updatedUser.address.street}
                   onChange={handleAddressChange}
+                  placeholder="Enter street"
                 />
               </Form.Group>
             </Col>
@@ -144,8 +177,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
                 <Form.Control
                   type="text"
                   name="city"
-                  value={editedUser?.address?.city || ""}
+                  value={updatedUser.address.city}
                   onChange={handleAddressChange}
+                  placeholder="Enter city"
                 />
               </Form.Group>
             </Col>
@@ -158,8 +192,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
                 <Form.Control
                   type="text"
                   name="state"
-                  value={editedUser?.address?.state || ""}
+                  value={updatedUser.address.state}
                   onChange={handleAddressChange}
+                  placeholder="Enter state"
                 />
               </Form.Group>
             </Col>
@@ -169,8 +204,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
                 <Form.Control
                   type="text"
                   name="postalCode"
-                  value={editedUser?.address?.postalCode || ""}
+                  value={updatedUser.address.postalCode}
                   onChange={handleAddressChange}
+                  placeholder="Enter postal code"
                 />
               </Form.Group>
             </Col>
@@ -180,8 +216,9 @@ const EditUser = ({ show, onHide, user, onSave }) => {
                 <Form.Control
                   type="text"
                   name="country"
-                  value={editedUser?.address?.country || ""}
+                  value={updatedUser.address.country}
                   onChange={handleAddressChange}
+                  placeholder="Enter country"
                 />
               </Form.Group>
             </Col>
