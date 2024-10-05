@@ -49,6 +49,7 @@ export default function UserManagement() {
     setShowAddUserModal(false); // Close modal after adding the user
   };
 
+  // Handle saving the edited user
   const handleSaveEditUser = async (updatedUser) => {
     try {
       await dispatch(updateUser({ id: updatedUser.id, userData: updatedUser }));
@@ -274,7 +275,7 @@ export default function UserManagement() {
           show={showEditUserModal}
           onHide={() => setShowEditUserModal(false)}
           user={editUser}
-          onSave={handleSaveEditUser} // This is the function that needs to be passed down
+          onSave={handleSaveEditUser} // Bind handleSaveEditUser to save changes
         />
       )}
       {detailUser && (

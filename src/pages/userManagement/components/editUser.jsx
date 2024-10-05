@@ -3,11 +3,10 @@ import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 
 const EditUser = ({ show, onHide, onSave, user }) => {
   const [updatedUser, setUpdatedUser] = useState({
-    username: "",
+    // username: "",
     firstName: "",
     lastName: "",
     email: "",
-    password: "", // Include the password field for updating
     phoneNumber: "",
     profile_pic: "",
     role: "Vendor", // Default role
@@ -43,7 +42,8 @@ const EditUser = ({ show, onHide, onSave, user }) => {
 
   // Handle saving the updated user
   const handleSave = () => {
-    onSave(updatedUser); // Call the onSave function passed down from the parent
+    // Make sure to pass the complete user object to the parent onSave handler
+    onSave(updatedUser);
     onHide(); // Close modal after saving
   };
 
@@ -55,16 +55,16 @@ const EditUser = ({ show, onHide, onSave, user }) => {
       <Modal.Body>
         <Form>
           {/* Username */}
-          <Form.Group className="mb-3">
+          {/* <Form.Group className="mb-3">
             <Form.Label>Username</Form.Label>
             <Form.Control
               type="text"
               name="username"
-              value={updatedUser.username}
+              value={updatedUser.username || ""}
               onChange={handleInputChange}
               placeholder="Enter username"
             />
-          </Form.Group>
+          </Form.Group> */}
 
           {/* First Name and Last Name */}
           <Row>
@@ -74,7 +74,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
                 <Form.Control
                   type="text"
                   name="firstName"
-                  value={updatedUser.firstName}
+                  value={updatedUser.firstName || ""}
                   onChange={handleInputChange}
                   placeholder="Enter first name"
                 />
@@ -86,7 +86,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
                 <Form.Control
                   type="text"
                   name="lastName"
-                  value={updatedUser.lastName}
+                  value={updatedUser.lastName || ""}
                   onChange={handleInputChange}
                   placeholder="Enter last name"
                 />
@@ -100,21 +100,9 @@ const EditUser = ({ show, onHide, onSave, user }) => {
             <Form.Control
               type="email"
               name="email"
-              value={updatedUser.email}
+              value={updatedUser.email || ""}
               onChange={handleInputChange}
               placeholder="Enter email"
-            />
-          </Form.Group>
-
-          {/* Password */}
-          <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              name="password"
-              value={updatedUser.password}
-              onChange={handleInputChange}
-              placeholder="Enter new password"
             />
           </Form.Group>
 
@@ -124,7 +112,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
             <Form.Control
               type="text"
               name="phoneNumber"
-              value={updatedUser.phoneNumber}
+              value={updatedUser.phoneNumber || ""}
               onChange={handleInputChange}
               placeholder="Enter phone number"
             />
@@ -136,7 +124,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
             <Form.Control
               type="text"
               name="profile_pic"
-              value={updatedUser.profile_pic}
+              value={updatedUser.profile_pic || ""}
               onChange={handleInputChange}
               placeholder="Enter profile picture URL"
             />
@@ -147,7 +135,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
             <Form.Label>Role</Form.Label>
             <Form.Select
               name="role"
-              value={updatedUser.role}
+              value={updatedUser.role || "Vendor"}
               onChange={handleInputChange}
             >
               <option>Administrator</option>
@@ -165,7 +153,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
                 <Form.Control
                   type="text"
                   name="street"
-                  value={updatedUser.address.street}
+                  value={updatedUser.address.street || ""}
                   onChange={handleAddressChange}
                   placeholder="Enter street"
                 />
@@ -177,7 +165,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
                 <Form.Control
                   type="text"
                   name="city"
-                  value={updatedUser.address.city}
+                  value={updatedUser.address.city || ""}
                   onChange={handleAddressChange}
                   placeholder="Enter city"
                 />
@@ -192,7 +180,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
                 <Form.Control
                   type="text"
                   name="state"
-                  value={updatedUser.address.state}
+                  value={updatedUser.address.state || ""}
                   onChange={handleAddressChange}
                   placeholder="Enter state"
                 />
@@ -204,7 +192,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
                 <Form.Control
                   type="text"
                   name="postalCode"
-                  value={updatedUser.address.postalCode}
+                  value={updatedUser.address.postalCode || ""}
                   onChange={handleAddressChange}
                   placeholder="Enter postal code"
                 />
@@ -216,7 +204,7 @@ const EditUser = ({ show, onHide, onSave, user }) => {
                 <Form.Control
                   type="text"
                   name="country"
-                  value={updatedUser.address.country}
+                  value={updatedUser.address.country || ""}
                   onChange={handleAddressChange}
                   placeholder="Enter country"
                 />

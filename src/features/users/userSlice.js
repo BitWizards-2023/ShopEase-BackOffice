@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "../../api/axios"; // Make sure axios is set up correctly
+import axios from "../../api/axios";
 
 // Async Thunks
 
@@ -43,23 +43,6 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Fetch user by ID
-export const fetchUserById = createAsyncThunk(
-  "users/fetchUserById",
-  async (id, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`/api/v1/User/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
-  }
-);
-
 // Update user
 export const updateUser = createAsyncThunk(
   "users/updateUser",
@@ -82,7 +65,7 @@ export const deleteUser = createAsyncThunk(
   "users/deleteUser",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`/api/v1/User/${id}`, {
+      const response = await axios.delete(`/v1/User/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -99,7 +82,7 @@ export const activateUser = createAsyncThunk(
   "users/activateUser",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/api/v1/User/${id}/activate`, {
+      const response = await axios.patch(`/v1/User/${id}/activate`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -116,7 +99,7 @@ export const approveUser = createAsyncThunk(
   "users/approveUser",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/api/v1/User/${id}/approve`, {
+      const response = await axios.patch(`/v1/User/${id}/approve`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -153,9 +136,16 @@ const userSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       })
-      // Add cases for other thunks like registerUser, updateUser, deleteUser, activateUser, etc.
       .addCase(registerUser.fulfilled, (state, action) => {
         state.users.push(action.payload); // Add new user to the list
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        const index = state.users.findIndex(
+          (user) => user.id === action.meta.arg.id
+        );
+        if (index !== -1) {
+          state.users[index] = action.payload;
+        }
       })
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.users = state.users.filter((user) => user.id !== action.meta.arg);
