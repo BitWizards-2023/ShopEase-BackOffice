@@ -1,13 +1,27 @@
+// src/components/signup/SignupForm.jsx
 import React, { useState } from "react";
-import { Container, Row, Col, Form, Button, InputGroup } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  InputGroup,
+  Accordion,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // For password visibility icons
 import signupImage from "../../assets/signup.jpg";
+import { useDispatch, useSelector } from "react-redux"; // Redux hooks
+import { signupUser, resetState } from "../../features/auth/authSlice"; // Add resetState
 
 const SignupForm = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // Form state
+  const { loading, error } = useSelector((state) => state.auth);
+
+  // Form state without assigned default values
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -16,6 +30,13 @@ const SignupForm = () => {
     firstName: "",
     lastName: "",
     phoneNumber: "",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
+    },
   });
 
   // State to toggle password visibility
@@ -24,10 +45,21 @@ const SignupForm = () => {
 
   // Handle form changes
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    // For nested address fields
+    if (name.includes("address.")) {
+      const addressKey = name.split(".")[1];
+      setFormData({
+        ...formData,
+        address: { ...formData.address, [addressKey]: value },
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   // Function to toggle password visibility
@@ -40,13 +72,36 @@ const SignupForm = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logic to handle signup (you'll call your API here)
-    console.log("Signup data:", formData);
 
-    // Redirect to dashboard after successful signup
-    navigate("/dashboard");
+    // Dispatch signupUser thunk
+    dispatch(signupUser(formData))
+      .unwrap()
+      .then(() => {
+        // Reset the form and state after successful signup
+        dispatch(resetState());
+        setFormData({
+          email: "",
+          password: "",
+          confirmPassword: "",
+          role: "vendor",
+          firstName: "",
+          lastName: "",
+          phoneNumber: "",
+          address: {
+            street: "",
+            city: "",
+            state: "",
+            postalCode: "",
+            country: "",
+          },
+        });
+        navigate("/dashboard"); // Redirect to dashboard after successful signup
+      })
+      .catch((error) => {
+        console.error("Sign-up error:", error); // Handle the error
+      });
   };
 
   return (
@@ -88,6 +143,9 @@ const SignupForm = () => {
               Join us today! Fill in the details below to create your account
               and get started.
             </p>
+
+            {/* Optional: show error */}
+            {error && <p className="text-danger text-center">{error}</p>}
 
             <Form onSubmit={handleSubmit}>
               {/* First Name and Last Name in One Row */}
@@ -157,6 +215,107 @@ const SignupForm = () => {
                   style={{ padding: "10px" }} // Increased padding for form fields
                 />
               </Form.Group>
+
+              {/* Accordion for Address Details */}
+              <Accordion className="mt-4">
+                <Accordion.Item eventKey="0">
+                  <Accordion.Header>Address Details</Accordion.Header>
+                  <Accordion.Body>
+                    {/* Street */}
+                    <Form.Group controlId="formAddressStreet" className="mt-3">
+                      <Form.Label>
+                        Street <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="address.street"
+                        placeholder="Enter street"
+                        value={formData.address.street}
+                        onChange={handleChange}
+                        required
+                        style={{ padding: "10px" }}
+                      />
+                    </Form.Group>
+
+                    {/* City */}
+                    <Form.Group controlId="formAddressCity" className="mt-3">
+                      <Form.Label>
+                        City <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="address.city"
+                        placeholder="Enter city"
+                        value={formData.address.city}
+                        onChange={handleChange}
+                        required
+                        style={{ padding: "10px" }}
+                      />
+                    </Form.Group>
+
+                    {/* State, Postal Code, and Country in One Row */}
+                    <Row>
+                      <Col>
+                        <Form.Group
+                          controlId="formAddressState"
+                          className="mt-3"
+                        >
+                          <Form.Label>
+                            State <span className="text-danger">*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="address.state"
+                            placeholder="Enter state"
+                            value={formData.address.state}
+                            onChange={handleChange}
+                            required
+                            style={{ padding: "10px" }}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Form.Group
+                          controlId="formAddressPostalCode"
+                          className="mt-3"
+                        >
+                          <Form.Label>
+                            Postal Code <span className="text-danger">*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="address.postalCode"
+                            placeholder="Enter postal code"
+                            value={formData.address.postalCode}
+                            onChange={handleChange}
+                            required
+                            style={{ padding: "10px" }}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Form.Group
+                          controlId="formAddressCountry"
+                          className="mt-3"
+                        >
+                          <Form.Label>
+                            Country <span className="text-danger">*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="address.country"
+                            placeholder="Enter country"
+                            value={formData.address.country}
+                            onChange={handleChange}
+                            required
+                            style={{ padding: "10px" }}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  </Accordion.Body>
+                </Accordion.Item>
+              </Accordion>
 
               {/* Password and Confirm Password in One Row */}
               <Row>
@@ -231,8 +390,13 @@ const SignupForm = () => {
                 </Form.Control>
               </Form.Group>
 
-              <Button variant="primary" type="submit" className="mt-4 w-100">
-                Sign Up
+              <Button
+                variant="primary"
+                type="submit"
+                className="mt-4 w-100"
+                disabled={loading}
+              >
+                {loading ? "Signing Up..." : "Sign Up"}
               </Button>
 
               <p className="mt-3 text-center">

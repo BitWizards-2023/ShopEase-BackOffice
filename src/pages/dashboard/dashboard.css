@@ -11,12 +11,38 @@
   backdrop-filter: blur(10px); /* Backdrop blur for the frosted glass effect */
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
   padding: 20px;
+  position: relative; /* Relative positioning for the stroke */
   color: black; /* Keep the original text color for readability */
   transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+  overflow: hidden; /* Ensure the left-side stroke stays within bounds */
+}
+
+/* Left-side thick stroke with 30% opacity */
+.glass-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 8px; /* Thickness of the left stroke */
+  height: 100%;
+  background: rgba(0, 123, 255, 0.3); /* Color with 30% opacity */
+  border-radius: 16px 0 0 16px; /* Round corners on the top-left and bottom-left */
+  pointer-events: none; /* Ensure it doesn't interfere with interactions */
 }
 
 /* Hover effect for the glass cards */
 .glass-card:hover {
   transform: scale(1.03); /* Slight scaling effect on hover */
   box-shadow: 0 6px 40px rgba(0, 0, 0, 0.15); /* Slightly more pronounced shadow on hover */
+}
+
+/* Extra responsiveness to keep content neat on smaller screens */
+@media (max-width: 768px) {
+  .glass-card {
+    padding: 15px;
+    border-radius: 12px;
+  }
+  .glass-card::before {
+    width: 6px; /* Reduce the thickness of the stroke for smaller screens */
+  }
 }

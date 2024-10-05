@@ -27,6 +27,22 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// Async thunk for sign-up
+export const signupUser = createAsyncThunk(
+  "auth/signupUser",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/v1/Auth/register", formData);
+      return response.data.data; // Assuming the API returns a token or user data
+    } catch (error) {
+      if (!error.response) {
+        throw error;
+      }
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 // Create auth slice
 const authSlice = createSlice({
   name: "auth",
@@ -38,6 +54,14 @@ const authSlice = createSlice({
       state.refreshToken = null;
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
+    },
+    // Add resetState to clear auth state
+    resetState: (state) => {
+      state.status = "idle";
+      state.error = null;
+      state.user = null;
+      state.token = null;
+      state.refreshToken = null;
     },
   },
   extraReducers: (builder) => {
@@ -57,10 +81,26 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload?.message || "Login failed";
+      })
+      // Handle signupUser pending, fulfilled, rejected states
+      .addCase(signupUser.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(signupUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.token = action.payload.token;
+        state.refreshToken = action.payload.refreshToken;
+        localStorage.setItem("token", action.payload.token); // Store token in localStorage
+        localStorage.setItem("refreshToken", action.payload.refreshToken); // Store refreshToken in localStorage
+      })
+      .addCase(signupUser.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload?.message || "Sign-up failed";
       });
   },
 });
 
 // Export actions and reducer
-export const { logout } = authSlice.actions;
+export const { logout, resetState } = authSlice.actions;
 export default authSlice.reducer;

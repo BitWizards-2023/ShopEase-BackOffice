@@ -26,7 +26,10 @@ import {
   activateProduct,
   deactivateProduct,
 } from "../../features/products/productSlice";
-import { fetchCategories, fetchCategoryById } from "../../features/category/categorySlice"; // Import category actions
+import {
+  fetchCategories,
+  fetchCategoryById,
+} from "../../features/category/categorySlice"; // Import category actions
 import AddProduct from "./components/addProduct";
 import EditProduct from "./components/editProduct";
 import ProductDetails from "./components/detailProduct";
@@ -35,8 +38,12 @@ export default function ProductManagement() {
   const dispatch = useDispatch();
 
   // Fetch products and categories from Redux store
-  const { products = [], status: productStatus } = useSelector((state) => state.products);  // Initialize products as empty array
-  const { categories = [], status: categoryStatus } = useSelector((state) => state.category); // Fetch categories
+  const { products = [], status: productStatus } = useSelector(
+    (state) => state.products
+  ); // Initialize products as empty array
+  const { categories = [], status: categoryStatus } = useSelector(
+    (state) => state.category
+  ); // Fetch categories
 
   // State for handling modals and product details
   const [showAddModal, setShowAddModal] = useState(false);
@@ -77,11 +84,15 @@ export default function ProductManagement() {
     }
   };
 
-
   // Function to toggle product status (activate/deactivate)
   const handleToggleStatus = async (id, isActive) => {
     try {
-      console.log("Toggling status for product with ID:", id, "isActive:", isActive);
+      console.log(
+        "Toggling status for product with ID:",
+        id,
+        "isActive:",
+        isActive
+      );
       if (isActive) {
         await dispatch(deactivateProduct(id)); // Deactivate if currently active
       } else {
@@ -92,13 +103,13 @@ export default function ProductManagement() {
     }
   };
 
-
   // Safeguard: Ensure categories is an array and category name exists before using .toLowerCase()
-  const filteredProducts = Array.isArray(products) && products.length > 0
-    ? products.filter((product) =>
-      product.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    : [];
+  const filteredProducts =
+    Array.isArray(products) && products.length > 0
+      ? products.filter((product) =>
+          product.name?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : [];
 
   // Function to get the category name by ID
   const getCategoryName = (categoryId) => {
@@ -258,8 +269,8 @@ export default function ProductManagement() {
                           >
                             <Dropdown.Item
                               onClick={() => {
-                                setEditProduct(product);  // Set the selected product to edit
-                                setShowEditModal(true);   // Show the edit modal
+                                setEditProduct(product); // Set the selected product to edit
+                                setShowEditModal(true); // Show the edit modal
                               }}
                             >
                               <FaEdit className="me-2" />
@@ -291,13 +302,12 @@ export default function ProductManagement() {
                             </Dropdown.Item>
                             <Dropdown.Item
                               onClick={() => {
-                                setProductDetails(product);  // Set the selected product to display
-                                setShowDetailsModal(true);   // Show the details modal
+                                setProductDetails(product); // Set the selected product to display
+                                setShowDetailsModal(true); // Show the details modal
                               }}
                             >
                               View Details
                             </Dropdown.Item>
-
                           </DropdownButton>
                         </td>
                       </tr>
