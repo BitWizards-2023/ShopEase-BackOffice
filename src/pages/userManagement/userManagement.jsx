@@ -8,14 +8,15 @@ import {
   Form,
   Dropdown,
   DropdownButton,
+  Badge,
+  Modal,
 } from "react-bootstrap";
-import { FaPlus, FaBell, FaEdit, FaTrash } from "react-icons/fa";
-import AddUser from "./components/addUser"; // Separate Add User component
-import EditUser from "./components/editUser"; // Separate Edit User component
-import Notifications from "./components/notifications"; // Separate Notifications component
+import { FaPlus, FaBell, FaEdit, FaTrash, FaUsers, FaUserShield } from "react-icons/fa";
+import AddUser from "./components/addUser";
+import EditUser from "./components/editUser";
+import Notifications from "./components/notifications";
 
 export default function UserManagement() {
-  // Mock data for users
   const [users, setUsers] = useState([
     {
       id: 1,
@@ -27,7 +28,6 @@ export default function UserManagement() {
     { id: 3, name: "Alex Johnson", role: "CSR", email: "alex@example.com" },
   ]);
 
-  // Notifications
   const [notifications, setNotifications] = useState([
     { id: 1, message: "User John Doe has been promoted to Administrator." },
     { id: 2, message: "Vendor Jane Smith has added a new product." },
@@ -36,9 +36,10 @@ export default function UserManagement() {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // Search query state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
-  // Add a new user
   const handleAddUser = (newUser) => {
     setUsers([...users, { ...newUser, id: users.length + 1 }]);
     setNotifications([
@@ -50,21 +51,21 @@ export default function UserManagement() {
     ]);
   };
 
-  // Edit an existing user
   const handleEditUser = (updatedUser) => {
     setUsers(users.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
     setShowEditUserModal(false);
   };
 
-  // Calculate statistics for cards
+  const handleDeleteUser = () => {
+    setUsers(users.filter((u) => u.id !== userToDelete.id));
+    setShowDeleteModal(false);
+  };
+
   const totalUsers = users.length;
-  const totalAdmins = users.filter(
-    (user) => user.role === "Administrator"
-  ).length;
+  const totalAdmins = users.filter((user) => user.role === "Administrator").length;
   const totalVendors = users.filter((user) => user.role === "Vendor").length;
   const totalCSRs = users.filter((user) => user.role === "CSR").length;
 
-  // Filtered users based on search query
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -97,42 +98,46 @@ export default function UserManagement() {
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card className="text-center glass-card shadow-lg" style={{ transition: "0.3s", cursor: "pointer" }}>
             <Card.Body>
+              <FaUsers size={30} className="mb-2" />
               <Card.Title>Total Users</Card.Title>
-              <Card.Text>
+              <Badge pill bg="info">
                 <h3>{totalUsers}</h3>
-              </Card.Text>
+              </Badge>
             </Card.Body>
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card className="text-center glass-card shadow-lg" style={{ transition: "0.3s", cursor: "pointer" }}>
             <Card.Body>
+              <FaUserShield size={30} className="mb-2" />
               <Card.Title>Administrators</Card.Title>
-              <Card.Text>
+              <Badge pill bg="primary">
                 <h3>{totalAdmins}</h3>
-              </Card.Text>
+              </Badge>
             </Card.Body>
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card className="text-center glass-card shadow-lg" style={{ transition: "0.3s", cursor: "pointer" }}>
             <Card.Body>
+              <FaBell size={30} className="mb-2" />
               <Card.Title>Vendors</Card.Title>
-              <Card.Text>
+              <Badge pill bg="warning">
                 <h3>{totalVendors}</h3>
-              </Card.Text>
+              </Badge>
             </Card.Body>
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card className="text-center glass-card shadow-lg" style={{ transition: "0.3s", cursor: "pointer" }}>
             <Card.Body>
+              <FaBell size={30} className="mb-2" />
               <Card.Title>CSRs</Card.Title>
-              <Card.Text>
+              <Badge pill bg="success">
                 <h3>{totalCSRs}</h3>
-              </Card.Text>
+              </Badge>
             </Card.Body>
           </Card>
         </Col>
@@ -156,7 +161,7 @@ export default function UserManagement() {
       {/* Table for User Listings */}
       <Row className="mb-4">
         <Col md={12}>
-          <Card className="mb-4">
+          <Card className="mb-4 shadow-sm">
             <Card.Body>
               <Card.Title>Users</Card.Title>
               <Table striped bordered hover responsive>
@@ -169,36 +174,61 @@ export default function UserManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id}>
-                      <td>{user.name}</td>
-                      <td>{user.email}</td>
-                      <td>{user.role}</td>
-                      <td>
-                        {/* Action Menu */}
-                        <DropdownButton
-                          variant="link"
-                          title="Actions"
-                          id={`dropdown-${user.id}`}
-                          align="end"
-                        >
-                          <Dropdown.Item
-                            onClick={() => {
-                              setEditUser(user);
-                              setShowEditUserModal(true);
-                            }}
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                      <tr key={user.id}>
+                        <td>{user.name}</td>
+                        <td>{user.email}</td>
+                        <td>
+                          <Badge
+                            bg={
+                              user.role === "Administrator"
+                                ? "primary"
+                                : user.role === "Vendor"
+                                ? "warning"
+                                : "success"
+                            }
                           >
-                            <FaEdit className="me-2" />
-                            Edit
-                          </Dropdown.Item>
-                          <Dropdown.Item>
-                            <FaTrash className="me-2" />
-                            Delete
-                          </Dropdown.Item>
-                        </DropdownButton>
+                            {user.role}
+                          </Badge>
+                        </td>
+                        <td>
+                          {/* Action Menu */}
+                          <DropdownButton
+                            variant="link"
+                            title="Actions"
+                            id={`dropdown-${user.id}`}
+                            align="end"
+                          >
+                            <Dropdown.Item
+                              onClick={() => {
+                                setEditUser(user);
+                                setShowEditUserModal(true);
+                              }}
+                            >
+                              <FaEdit className="me-2" />
+                              Edit
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => {
+                                setUserToDelete(user);
+                                setShowDeleteModal(true);
+                              }}
+                            >
+                              <FaTrash className="me-2" />
+                              Delete
+                            </Dropdown.Item>
+                          </DropdownButton>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="text-center">
+                        No users found.
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </Table>
             </Card.Body>
@@ -221,6 +251,30 @@ export default function UserManagement() {
           user={editUser}
           onSave={handleEditUser}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {userToDelete && (
+        <Modal
+          show={showDeleteModal}
+          onHide={() => setShowDeleteModal(false)}
+          centered
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Delete</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Are you sure you want to delete user <b>{userToDelete.name}</b>?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDeleteUser}>
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
       )}
     </div>
   );
