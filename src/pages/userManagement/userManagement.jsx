@@ -6,10 +6,10 @@ import {
   Col,
   Card,
   Form,
-  Dropdown,
-  DropdownButton,
   Badge,
   Modal,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
 import { FaPlus, FaBell, FaEdit, FaTrash, FaUsers, FaUserShield } from "react-icons/fa";
 import AddUser from "./components/addUser";
@@ -102,7 +102,7 @@ export default function UserManagement() {
             <Card.Body>
               <FaUsers size={30} className="mb-2" />
               <Card.Title>Total Users</Card.Title>
-              <Badge pill bg="info">
+              <Badge pill bg="primary">
                 <h3>{totalUsers}</h3>
               </Badge>
             </Card.Body>
@@ -113,7 +113,7 @@ export default function UserManagement() {
             <Card.Body>
               <FaUserShield size={30} className="mb-2" />
               <Card.Title>Administrators</Card.Title>
-              <Badge pill bg="primary">
+              <Badge pill bg="info">
                 <h3>{totalAdmins}</h3>
               </Badge>
             </Card.Body>
@@ -124,7 +124,7 @@ export default function UserManagement() {
             <Card.Body>
               <FaBell size={30} className="mb-2" />
               <Card.Title>Vendors</Card.Title>
-              <Badge pill bg="warning">
+              <Badge pill bg="secondary">
                 <h3>{totalVendors}</h3>
               </Badge>
             </Card.Body>
@@ -135,7 +135,7 @@ export default function UserManagement() {
             <Card.Body>
               <FaBell size={30} className="mb-2" />
               <Card.Title>CSRs</Card.Title>
-              <Badge pill bg="success">
+              <Badge pill bg="danger">
                 <h3>{totalCSRs}</h3>
               </Badge>
             </Card.Body>
@@ -183,42 +183,49 @@ export default function UserManagement() {
                           <Badge
                             bg={
                               user.role === "Administrator"
-                                ? "primary"
+                                ? "info"
                                 : user.role === "Vendor"
-                                ? "warning"
-                                : "success"
+                                ? "secondary"
+                                : "danger"
                             }
                           >
                             {user.role}
                           </Badge>
                         </td>
                         <td>
-                          {/* Action Menu */}
-                          <DropdownButton
-                            variant="link"
-                            title="Actions"
-                            id={`dropdown-${user.id}`}
-                            align="end"
-                          >
-                            <Dropdown.Item
-                              onClick={() => {
-                                setEditUser(user);
-                                setShowEditUserModal(true);
-                              }}
+                          {/* Action Buttons */}
+                          <div className="d-flex justify-content-around">
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={<Tooltip id={`edit-tooltip-${user.id}`}>Edit User</Tooltip>}
                             >
-                              <FaEdit className="me-2" />
-                              Edit
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() => {
-                                setUserToDelete(user);
-                                setShowDeleteModal(true);
-                              }}
+                              <Button
+                                variant="outline-info"
+                                size="sm"
+                                onClick={() => {
+                                  setEditUser(user);
+                                  setShowEditUserModal(true);
+                                }}
+                              >
+                                <FaEdit />
+                              </Button>
+                            </OverlayTrigger>
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={<Tooltip id={`delete-tooltip-${user.id}`}>Delete User</Tooltip>}
                             >
-                              <FaTrash className="me-2" />
-                              Delete
-                            </Dropdown.Item>
-                          </DropdownButton>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => {
+                                  setUserToDelete(user);
+                                  setShowDeleteModal(true);
+                                }}
+                              >
+                                <FaTrash />
+                              </Button>
+                            </OverlayTrigger>
+                          </div>
                         </td>
                       </tr>
                     ))
