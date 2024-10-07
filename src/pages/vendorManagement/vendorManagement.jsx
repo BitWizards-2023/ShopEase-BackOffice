@@ -8,8 +8,8 @@ import {
   Form,
   Dropdown,
   DropdownButton,
-  OverlayTrigger,
-  Tooltip,
+  Pagination,
+  Badge,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus, FaEllipsisV, FaStar, FaComments } from "react-icons/fa";
 import AddVendor from "./components/addVendor";
@@ -46,16 +46,28 @@ export default function VendorManagement() {
   const [showAddVendorModal, setShowAddVendorModal] = useState(false);
   const [vendorDetails, setVendorDetails] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("name");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Add a new vendor
   const handleAddVendor = (newVendor) => {
     setVendors([...vendors, { ...newVendor, id: vendors.length + 1 }]);
   };
 
-  // Filtered vendors based on search query
-  const filteredVendors = vendors.filter((vendor) =>
-    vendor.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter and sort vendors based on search query and selected sorting option
+  const filteredVendors = vendors
+    .filter((vendor) => vendor.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      if (sortOption === "name") {
+        return a.name.localeCompare(b.name);
+      } else if (sortOption === "ranking") {
+        return b.averageRanking - a.averageRanking;
+      } else if (sortOption === "comments") {
+        return b.customerComments.length - a.customerComments.length;
+      }
+      return 0;
+    });
 
   // Calculate important statistics
   const totalVendors = vendors.length;
@@ -63,6 +75,23 @@ export default function VendorManagement() {
     vendors.reduce((acc, vendor) => acc + vendor.averageRanking, 0) /
     vendors.length
   ).toFixed(1);
+
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentVendors = filteredVendors.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(filteredVendors.length / itemsPerPage);
+
+  // Function to change the page
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Helper Function for Badge Color
+  const getRankingBadgeColor = (ranking) => {
+    if (ranking >= 4) return "#FF69B4"; // Pink for high rankings
+    if (ranking >= 3) return "#00BFFF"; // Blue for medium rankings
+    return "#FF6347"; // Default red color for lower rankings
+  };
 
   return (
     <div className="vendor-management">
@@ -81,10 +110,11 @@ export default function VendorManagement() {
             onClick={() => setShowAddVendorModal(true)}
             className="shadow-sm hover-scale"
             style={{
-              background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+              background: "linear-gradient(135deg, #FF69B4, #00BFFF)",
               border: "none",
               borderRadius: "12px",
               transition: "transform 0.3s",
+              padding: "10px 15px",
             }}
           >
             <FaPlus className="me-2" />
@@ -103,12 +133,13 @@ export default function VendorManagement() {
               background: "rgba(255, 255, 255, 0.8)",
               borderRadius: "15px",
               transition: "transform 0.3s, box-shadow 0.3s",
+              padding: "20px",
             }}
           >
             <Card.Body>
               <Card.Title>Total Vendors</Card.Title>
               <Card.Text>
-                <h3>{totalVendors}</h3>
+                <h3 className="text-info">{totalVendors}</h3>
               </Card.Text>
             </Card.Body>
           </Card>
@@ -121,13 +152,22 @@ export default function VendorManagement() {
               background: "rgba(255, 255, 255, 0.8)",
               borderRadius: "15px",
               transition: "transform 0.3s, box-shadow 0.3s",
+              padding: "20px",
             }}
           >
             <Card.Body>
               <Card.Title>Average Vendor Ranking</Card.Title>
               <Card.Text>
                 <h3>
-                  {averageRanking}{" "}
+                  <Badge
+                    pill
+                    style={{
+                      backgroundColor: getRankingBadgeColor(averageRanking),
+                      color: "#fff",
+                    }}
+                  >
+                    {averageRanking}
+                  </Badge>{" "}
                   <FaStar className="text-warning star-animated" />
                 </h3>
               </Card.Text>
@@ -136,7 +176,7 @@ export default function VendorManagement() {
         </Col>
       </Row>
 
-      {/* Vendor Listings Heading with Search Bar */}
+      {/* Vendor Listings Heading with Search Bar and Sort Option */}
       <Row className="mb-4 d-flex align-items-center justify-content-between">
         <Col md={6}>
           <h4>Vendor Listings</h4>
@@ -150,6 +190,18 @@ export default function VendorManagement() {
             className="shadow-sm search-bar"
             style={{ borderRadius: "8px" }}
           />
+        </Col>
+        <Col md={2}>
+          <Form.Select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="shadow-sm"
+            style={{ borderRadius: "8px" }}
+          >
+            <option value="name">Sort by Name</option>
+            <option value="ranking">Sort by Ranking</option>
+            <option value="comments">Sort by Comments</option>
+          </Form.Select>
         </Col>
       </Row>
 
@@ -172,12 +224,23 @@ export default function VendorManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredVendors.map((vendor) => (
+                  {currentVendors.map((vendor) => (
                     <tr key={vendor.id} className="align-middle">
                       <td>{vendor.name}</td>
                       <td>
-                        {vendor.averageRanking}{" "}
-                        <FaStar className="text-warning star-animated" />
+                        <Badge
+                          pill
+                          style={{
+                            backgroundColor: getRankingBadgeColor(vendor.averageRanking),
+                            color: "#fff",
+                          }}
+                        >
+                          {vendor.averageRanking}
+                        </Badge>{" "}
+                        <FaStar
+                          className="text-warning star-animated"
+                          style={{ marginLeft: "5px" }}
+                        />
                       </td>
                       <td>
                         <div className="d-flex align-items-center">
@@ -195,15 +258,7 @@ export default function VendorManagement() {
                               cursor: "pointer",
                               transition: "background-color 0.3s, box-shadow 0.3s",
                               position: "relative",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = "#f0f0f0";
-                              e.currentTarget.style.boxShadow =
-                                "0px 4px 8px rgba(0, 0, 0, 0.1)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = "white";
-                              e.currentTarget.style.boxShadow = "none";
+                              backgroundColor: "#f8f9fa",
                             }}
                           >
                             <FaComments
@@ -218,58 +273,7 @@ export default function VendorManagement() {
                             >
                               {vendor.customerComments.length}
                             </span>
-                            {/* Badge for Comments */}
-                            <span
-                              className="badge bg-primary rounded-pill"
-                              style={{
-                                position: "absolute",
-                                top: "-8px",
-                                right: "-8px",
-                                padding: "5px 10px",
-                                fontSize: "12px",
-                                color: "white",
-                                backgroundColor: "#007bff",
-                                boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-                              }}
-                            >
-                              View
-                            </span>
                           </Button>
-
-                          {/* Tooltip for Detailed Comments */}
-                          <OverlayTrigger
-                            placement="right"
-                            overlay={
-                              <Tooltip
-                                id={`tooltip-${vendor.id}`}
-                                className="comment-tooltip"
-                              >
-                                {vendor.customerComments.map((comment) => (
-                                  <div
-                                    key={comment.id}
-                                    className="comment-bubble"
-                                    style={{
-                                      marginBottom: "8px",
-                                      backgroundColor: "#f8f9fa",
-                                      padding: "6px 12px",
-                                      borderRadius: "8px",
-                                      boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                                      color: "#333", // Darker color for better visibility
-                                    }}
-                                  >
-                                    <strong style={{ color: "#000" }}>{comment.user}:</strong>{" "}
-                                    {comment.comment}{" "}
-                                    <FaStar className="text-warning" />{" "}
-                                    {comment.ranking}
-                                  </div>
-                                ))}
-                              </Tooltip>
-                            }
-                          >
-                            <span className="ms-2" style={{ cursor: "pointer" }}>
-                              Details
-                            </span>
-                          </OverlayTrigger>
                         </div>
                       </td>
                       <td>
@@ -293,6 +297,26 @@ export default function VendorManagement() {
                   ))}
                 </tbody>
               </Table>
+
+              {/* Pagination */}
+              <Pagination className="mt-3">
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <Pagination.Item
+                    key={index}
+                    active={index + 1 === currentPage}
+                    onClick={() => handlePageChange(index + 1)}
+                    style={{
+                      cursor: "pointer",
+                      transition: "background-color 0.3s",
+                      borderRadius: "8px",
+                      margin: "0 3px",
+                    }}
+                    className="shadow-sm"
+                  >
+                    {index + 1}
+                  </Pagination.Item>
+                ))}
+              </Pagination>
             </Card.Body>
           </Card>
         </Col>

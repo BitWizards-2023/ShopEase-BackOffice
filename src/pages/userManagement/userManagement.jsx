@@ -73,6 +73,15 @@ export default function UserManagement() {
       user.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Custom Styles for Badges
+  const badgeStyle = {
+    fontSize: '1.2rem',
+    padding: '10px 15px',
+    borderRadius: '20px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    display: 'inline-block',
+  };
+
   return (
     <div>
       {/* Header */}
@@ -102,7 +111,7 @@ export default function UserManagement() {
             <Card.Body>
               <FaUsers size={30} className="mb-2" />
               <Card.Title>Total Users</Card.Title>
-              <Badge pill bg="primary">
+              <Badge pill bg="primary" style={{ ...badgeStyle, background: 'linear-gradient(135deg, #6EC1E4, #80D0C7)' }}>
                 <h3>{totalUsers}</h3>
               </Badge>
             </Card.Body>
@@ -113,7 +122,7 @@ export default function UserManagement() {
             <Card.Body>
               <FaUserShield size={30} className="mb-2" />
               <Card.Title>Administrators</Card.Title>
-              <Badge pill bg="info">
+              <Badge pill bg="info" style={{ ...badgeStyle, background: 'linear-gradient(135deg, #4FC3F7, #03A9F4)' }}>
                 <h3>{totalAdmins}</h3>
               </Badge>
             </Card.Body>
@@ -124,7 +133,7 @@ export default function UserManagement() {
             <Card.Body>
               <FaBell size={30} className="mb-2" />
               <Card.Title>Vendors</Card.Title>
-              <Badge pill bg="secondary">
+              <Badge pill bg="secondary" style={{ ...badgeStyle, background: 'linear-gradient(135deg, #B3E5FC, #4DD0E1)' }}>
                 <h3>{totalVendors}</h3>
               </Badge>
             </Card.Body>
@@ -135,7 +144,7 @@ export default function UserManagement() {
             <Card.Body>
               <FaBell size={30} className="mb-2" />
               <Card.Title>CSRs</Card.Title>
-              <Badge pill bg="danger">
+              <Badge pill bg="danger" style={{ ...badgeStyle, background: 'linear-gradient(135deg, #F48FB1, #F06292)' }}>
                 <h3>{totalCSRs}</h3>
               </Badge>
             </Card.Body>
@@ -188,6 +197,7 @@ export default function UserManagement() {
                                 ? "secondary"
                                 : "danger"
                             }
+                            style={badgeStyle}
                           >
                             {user.role}
                           </Badge>
