@@ -11,10 +11,10 @@ import {
   OverlayTrigger,
   Tooltip,
 } from "react-bootstrap";
-import { FaEdit, FaTrash, FaPlus, FaEllipsisV, FaStar } from "react-icons/fa";
-import AddVendor from "./components/addVendor"; // Separate Add Vendor component
-import VendorDetails from "./components/vendorDetails"; // Separate Vendor Details component
-import Notifications from "./components/notifications"; // Separate Notifications component
+import { FaEdit, FaTrash, FaPlus, FaEllipsisV, FaStar, FaComments } from "react-icons/fa";
+import AddVendor from "./components/addVendor";
+import VendorDetails from "./components/vendorDetails";
+import Notifications from "./components/notifications";
 
 export default function VendorManagement() {
   // Mock data for vendors
@@ -45,7 +45,7 @@ export default function VendorManagement() {
 
   const [showAddVendorModal, setShowAddVendorModal] = useState(false);
   const [vendorDetails, setVendorDetails] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // Search query state
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Add a new vendor
   const handleAddVendor = (newVendor) => {
@@ -65,7 +65,7 @@ export default function VendorManagement() {
   ).toFixed(1);
 
   return (
-    <div>
+    <div className="vendor-management">
       {/* Header */}
       <h2 className="mb-4 d-flex align-items-center">
         <span className="me-2">Vendor Management</span>
@@ -79,6 +79,13 @@ export default function VendorManagement() {
             variant="primary"
             size="sm"
             onClick={() => setShowAddVendorModal(true)}
+            className="shadow-sm hover-scale"
+            style={{
+              background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+              border: "none",
+              borderRadius: "12px",
+              transition: "transform 0.3s",
+            }}
           >
             <FaPlus className="me-2" />
             Add New Vendor
@@ -89,7 +96,15 @@ export default function VendorManagement() {
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
         <Col md={6}>
-          <Card className="text-center glass-card">
+          <Card
+            className="text-center glass-card shadow-lg"
+            style={{
+              backdropFilter: "blur(10px)",
+              background: "rgba(255, 255, 255, 0.8)",
+              borderRadius: "15px",
+              transition: "transform 0.3s, box-shadow 0.3s",
+            }}
+          >
             <Card.Body>
               <Card.Title>Total Vendors</Card.Title>
               <Card.Text>
@@ -99,12 +114,21 @@ export default function VendorManagement() {
           </Card>
         </Col>
         <Col md={6}>
-          <Card className="text-center glass-card">
+          <Card
+            className="text-center glass-card shadow-lg"
+            style={{
+              backdropFilter: "blur(10px)",
+              background: "rgba(255, 255, 255, 0.8)",
+              borderRadius: "15px",
+              transition: "transform 0.3s, box-shadow 0.3s",
+            }}
+          >
             <Card.Body>
               <Card.Title>Average Vendor Ranking</Card.Title>
               <Card.Text>
                 <h3>
-                  {averageRanking} <FaStar className="text-warning" />
+                  {averageRanking}{" "}
+                  <FaStar className="text-warning star-animated" />
                 </h3>
               </Card.Text>
             </Card.Body>
@@ -123,6 +147,8 @@ export default function VendorManagement() {
             placeholder="Search vendors..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className="shadow-sm search-bar"
+            style={{ borderRadius: "8px" }}
           />
         </Col>
       </Row>
@@ -130,10 +156,13 @@ export default function VendorManagement() {
       {/* Table for Vendor Listings */}
       <Row className="mb-4">
         <Col md={12}>
-          <Card className="mb-4">
+          <Card
+            className="mb-4 shadow-lg"
+            style={{ borderRadius: "15px", overflow: "hidden" }}
+          >
             <Card.Body>
               <Card.Title>Vendors</Card.Title>
-              <Table striped bordered hover responsive>
+              <Table striped bordered hover responsive className="table-vendors">
                 <thead>
                   <tr>
                     <th>Vendor Name</th>
@@ -144,33 +173,104 @@ export default function VendorManagement() {
                 </thead>
                 <tbody>
                   {filteredVendors.map((vendor) => (
-                    <tr key={vendor.id}>
+                    <tr key={vendor.id} className="align-middle">
                       <td>{vendor.name}</td>
                       <td>
                         {vendor.averageRanking}{" "}
-                        <FaStar className="text-warning" />
+                        <FaStar className="text-warning star-animated" />
                       </td>
                       <td>
-                        {vendor.customerComments.length} Comments
-                        <OverlayTrigger
-                          placement="right"
-                          overlay={
-                            <Tooltip id={`tooltip-${vendor.id}`}>
-                              {vendor.customerComments.map((comment) => (
-                                <div key={comment.id}>
-                                  <strong>{comment.user}:</strong>{" "}
-                                  {comment.comment}{" "}
-                                  <FaStar className="text-warning" />{" "}
-                                  {comment.ranking}
-                                </div>
-                              ))}
-                            </Tooltip>
-                          }
-                        >
-                          <Button variant="link" className="p-0 ms-2">
-                            View Comments
+                        <div className="d-flex align-items-center">
+                          {/* Icon with Comment Count */}
+                          <Button
+                            variant="light"
+                            size="sm"
+                            className="comment-bubble-button shadow-sm"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              borderRadius: "15px",
+                              border: "1px solid #ccc",
+                              padding: "4px 8px",
+                              cursor: "pointer",
+                              transition: "background-color 0.3s, box-shadow 0.3s",
+                              position: "relative",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#f0f0f0";
+                              e.currentTarget.style.boxShadow =
+                                "0px 4px 8px rgba(0, 0, 0, 0.1)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "white";
+                              e.currentTarget.style.boxShadow = "none";
+                            }}
+                          >
+                            <FaComments
+                              className="me-2"
+                              style={{ color: "#007bff" }}
+                            />
+                            <span
+                              style={{
+                                fontWeight: "500",
+                                color: "#007bff",
+                              }}
+                            >
+                              {vendor.customerComments.length}
+                            </span>
+                            {/* Badge for Comments */}
+                            <span
+                              className="badge bg-primary rounded-pill"
+                              style={{
+                                position: "absolute",
+                                top: "-8px",
+                                right: "-8px",
+                                padding: "5px 10px",
+                                fontSize: "12px",
+                                color: "white",
+                                backgroundColor: "#007bff",
+                                boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                              }}
+                            >
+                              View
+                            </span>
                           </Button>
-                        </OverlayTrigger>
+
+                          {/* Tooltip for Detailed Comments */}
+                          <OverlayTrigger
+                            placement="right"
+                            overlay={
+                              <Tooltip
+                                id={`tooltip-${vendor.id}`}
+                                className="comment-tooltip"
+                              >
+                                {vendor.customerComments.map((comment) => (
+                                  <div
+                                    key={comment.id}
+                                    className="comment-bubble"
+                                    style={{
+                                      marginBottom: "8px",
+                                      backgroundColor: "#f8f9fa",
+                                      padding: "6px 12px",
+                                      borderRadius: "8px",
+                                      boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                                      color: "#333", // Darker color for better visibility
+                                    }}
+                                  >
+                                    <strong style={{ color: "#000" }}>{comment.user}:</strong>{" "}
+                                    {comment.comment}{" "}
+                                    <FaStar className="text-warning" />{" "}
+                                    {comment.ranking}
+                                  </div>
+                                ))}
+                              </Tooltip>
+                            }
+                          >
+                            <span className="ms-2" style={{ cursor: "pointer" }}>
+                              Details
+                            </span>
+                          </OverlayTrigger>
+                        </div>
                       </td>
                       <td>
                         {/* Action Menu */}
@@ -179,6 +279,7 @@ export default function VendorManagement() {
                           title={<FaEllipsisV />}
                           id={`dropdown-${vendor.id}`}
                           align="end"
+                          className="shadow-sm hover-scale"
                         >
                           <Dropdown.Item
                             onClick={() => setVendorDetails(vendor)}
