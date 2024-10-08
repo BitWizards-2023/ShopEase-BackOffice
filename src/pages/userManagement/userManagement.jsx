@@ -6,7 +6,7 @@ import {
   activateUser,
   approveUser,
   updateUser,
-  registerUser, // Import registerUser to handle adding new users
+  registerUser,
 } from "../../features/users/userSlice";
 import {
   Table,
@@ -17,11 +17,14 @@ import {
   Form,
   Dropdown,
   DropdownButton,
+  ButtonGroup,
+  Modal,
+  Alert,
+  Badge,
 } from "react-bootstrap";
 import { FaPlus, FaEdit, FaTrash, FaEye } from "react-icons/fa";
 import AddUser from "./components/addUser";
 import EditUser from "./components/editUser";
-import Notifications from "./components/notifications";
 import UserDetailModal from "./components/detailUser";
 
 export default function UserManagement() {
@@ -34,6 +37,11 @@ export default function UserManagement() {
   const [showUserDetailModal, setShowUserDetailModal] = useState(false);
   const [detailUser, setDetailUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteUserId, setDeleteUserId] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotification, setShowNotification] = useState(false);
 
   // Fetch users on component mount
   useEffect(() => {
@@ -45,24 +53,38 @@ export default function UserManagement() {
   // Handle adding a new user
   const handleAddUser = async (newUser) => {
     await dispatch(registerUser(newUser));
-    await dispatch(fetchUsers()); // Fetch users again after adding a new user
-    setShowAddUserModal(false); // Close modal after adding the user
+    await dispatch(fetchUsers());
+    setShowAddUserModal(false);
+    addNotification("success", `User ${newUser.firstName} added successfully.`);
   };
 
   // Handle saving the edited user
   const handleSaveEditUser = async (updatedUser) => {
     try {
       await dispatch(updateUser({ id: updatedUser.id, userData: updatedUser }));
-      await dispatch(fetchUsers()); // Refetch users after updating
-      setShowEditUserModal(false); // Close the modal
+      await dispatch(fetchUsers());
+      setShowEditUserModal(false);
+      addNotification("success", `User ${updatedUser.firstName} updated successfully.`);
     } catch (error) {
       console.error("Error updating user:", error);
+      addNotification("danger", "Error updating user.");
     }
   };
 
-  // Delete user handler
+  // Open delete confirmation modal
   const handleDeleteUser = (id) => {
-    dispatch(deleteUser(id));
+    setDeleteUserId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  // Confirm delete user
+  const confirmDeleteUser = () => {
+    if (deleteUserId) {
+      const userToDelete = users.find((user) => user.id === deleteUserId);
+      dispatch(deleteUser(deleteUserId));
+      setShowDeleteConfirm(false);
+      addNotification("danger", `User ${userToDelete.firstName} deleted successfully.`);
+    }
   };
 
   // Activate user handler
@@ -75,6 +97,17 @@ export default function UserManagement() {
     dispatch(approveUser(id));
   };
 
+  // Add notification
+  const addNotification = (type, message) => {
+    const newNotification = { id: Date.now(), type, message };
+    setNotifications((prev) => [...prev, newNotification]);
+  };
+
+  // Remove notification
+  const clearNotification = (id) => {
+    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+  };
+
   // Calculate statistics
   const totalUsers = users.length;
   const totalAdmins = users.filter(
@@ -83,8 +116,27 @@ export default function UserManagement() {
   const totalVendors = users.filter((user) => user.role === "Vendor").length;
   const totalCSRs = users.filter((user) => user.role === "CSR").length;
 
+  // Sort logic
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    if (sortConfig.key) {
+      const aValue = a[sortConfig.key]?.toLowerCase() || "";
+      const bValue = b[sortConfig.key]?.toLowerCase() || "";
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+    }
+    return 0;
+  });
+
   // Search logic
-  const filteredUsers = users.filter(
+  const filteredUsers = sortedUsers.filter(
     (user) =>
       (user.firstName?.toLowerCase() || "").includes(
         searchQuery.toLowerCase()
@@ -96,32 +148,56 @@ export default function UserManagement() {
       (user.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
+  // Color-coded roles
+  const roleColor = (role) => {
+    switch (role) {
+      case "Administrator":
+        return "bg-primary text-white";
+      case "Vendor":
+        return "bg-warning text-dark";
+      case "CSR":
+        return "bg-success text-white";
+      default:
+        return "bg-light text-dark";
+    }
+  };
+
   return (
-    <div>
+    <div className="user-management">
       {/* Header */}
       <h2 className="mb-4 d-flex align-items-center">
         <span className="me-2">User Management</span>
 
-        {/* Notifications Icon */}
-        <Notifications notifications={[]} />
-
-        {/* Add User Button */}
+        {/* Notifications Section */}
         <div className="ms-auto">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowAddUserModal(true)}
-          >
-            <FaPlus className="me-2" />
-            Add New User
+          <Button variant="primary" onClick={() => setShowNotification(!showNotification)}>
+            Notifications <Badge bg="light" text="dark">{notifications.length}</Badge>
           </Button>
         </div>
       </h2>
 
+      {/* Notifications Area */}
+      {showNotification && (
+        <div className="notifications mt-3">
+          {notifications.map((notif) => (
+            <Alert key={notif.id} variant={notif.type} className="d-flex justify-content-between align-items-center">
+              <span>{notif.message}</span>
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => clearNotification(notif.id)}
+              >
+                Clear
+              </Button>
+            </Alert>
+          ))}
+        </div>
+      )}
+
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card className="text-center glass-card bg-info text-white">
             <Card.Body>
               <Card.Title>Total Users</Card.Title>
               <Card.Text>
@@ -131,7 +207,7 @@ export default function UserManagement() {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card className="text-center glass-card bg-primary text-white">
             <Card.Body>
               <Card.Title>Administrators</Card.Title>
               <Card.Text>
@@ -141,7 +217,7 @@ export default function UserManagement() {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card className="text-center glass-card bg-warning text-dark">
             <Card.Body>
               <Card.Title>Vendors</Card.Title>
               <Card.Text>
@@ -151,7 +227,7 @@ export default function UserManagement() {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card className="text-center glass-card bg-success text-white">
             <Card.Body>
               <Card.Title>CSRs</Card.Title>
               <Card.Text>
@@ -162,7 +238,7 @@ export default function UserManagement() {
         </Col>
       </Row>
 
-      {/* User Listings Heading with Search Bar */}
+      {/* Search Bar */}
       <Row className="mb-4 d-flex align-items-center justify-content-between">
         <Col md={6}>
           <h4>User Listings</h4>
@@ -173,6 +249,7 @@ export default function UserManagement() {
             placeholder="Search users..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className="shadow-sm"
           />
         </Col>
       </Row>
@@ -180,10 +257,10 @@ export default function UserManagement() {
       {/* Table for User Listings */}
       <Row className="mb-4">
         <Col md={12}>
-          <Card className="mb-4">
+          <Card className="mb-4 shadow-lg">
             <Card.Body>
               <Card.Title>Users</Card.Title>
-              <Table striped bordered hover responsive>
+              <Table striped bordered hover responsive className="text-center">
                 <thead>
                   <tr>
                     <th>Profile Picture</th>
@@ -198,7 +275,7 @@ export default function UserManagement() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((user) => (
-                    <tr key={user.id}>
+                    <tr key={user.id} className={roleColor(user.role)}>
                       <td>
                         <img
                           src={user.profile_pic}
@@ -207,6 +284,7 @@ export default function UserManagement() {
                             width: "50px",
                             height: "50px",
                             borderRadius: "50%",
+                            objectFit: "cover",
                           }}
                         />
                       </td>
@@ -217,12 +295,12 @@ export default function UserManagement() {
                       <td>{user.phoneNumber}</td>
                       <td>{user.role}</td>
                       <td>
-                        {/* Action Menu */}
                         <DropdownButton
                           variant="link"
                           title="Actions"
                           id={`dropdown-${user.id}`}
                           align="end"
+                          className="shadow-none"
                         >
                           <Dropdown.Item
                             onClick={() => {
@@ -240,7 +318,7 @@ export default function UserManagement() {
                           <Dropdown.Item
                             onClick={() => handleDeleteUser(user.id)}
                           >
-                            <FaTrash className="me-2" />
+                            <FaTrash className="me-2 text-danger" />
                             Delete
                           </Dropdown.Item>
                           <Dropdown.Item
@@ -264,7 +342,7 @@ export default function UserManagement() {
         </Col>
       </Row>
 
-      {/* Modals for Add, Edit, and Detail */}
+      {/* Add, Edit, and Detail Modals */}
       <AddUser
         show={showAddUserModal}
         onHide={() => setShowAddUserModal(false)}
@@ -285,6 +363,24 @@ export default function UserManagement() {
           user={detailUser}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete this user? This action cannot be undone.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDeleteUser}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
