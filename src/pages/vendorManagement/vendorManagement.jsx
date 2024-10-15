@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Table,
   Button,
   Row,
   Col,
@@ -9,10 +10,6 @@ import {
   DropdownButton,
   OverlayTrigger,
   Tooltip,
-  Accordion,
-  ProgressBar,
-  InputGroup,
-  Pagination,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus, FaEllipsisV, FaStar } from "react-icons/fa";
 import AddVendor from "./components/addVendor"; // Separate Add Vendor component
@@ -50,8 +47,7 @@ export default function VendorManagement() {
 
   const [showAddVendorModal, setShowAddVendorModal] = useState(false);
   const [vendorDetails, setVendorDetails] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("name");
+  const [searchQuery, setSearchQuery] = useState(""); // Search query state
 
   const dispatch = useDispatch();
 
@@ -75,6 +71,7 @@ export default function VendorManagement() {
     vendor.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Calculate important statistics
   const totalVendors = vendors.length;
   const averageRanking = (
     vendors.reduce((acc, vendor) => acc + vendor.averageRanking, 0) /
@@ -82,7 +79,8 @@ export default function VendorManagement() {
   ).toFixed(1);
 
   return (
-    <div style={{ padding: "20px", backgroundColor: "#f7f9fc" }}>
+    <div>
+      {/* Header */}
       <h2 className="mb-4 d-flex align-items-center">
         <span className="me-2">Vendors List</span>
 
@@ -92,33 +90,20 @@ export default function VendorManagement() {
         {/* Add Vendor Button */}
         {/* <div className="ms-auto">
           <Button
-            className="fab"
             variant="primary"
-            size="lg"
+            size="sm"
             onClick={() => setShowAddVendorModal(true)}
-            style={{
-              borderRadius: "50%",
-              padding: "12px",
-              boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-              backgroundColor: "#007bff",
-            }}
           >
-            <FaPlus />
+            <FaPlus className="me-2" />
+            Add New Vendor
           </Button>
         </div> */}
       </h2>
 
-      {/* Stats Row */}
+      {/* Row of Cards for Important Information */}
       <Row className="mb-4">
         <Col md={6}>
-          <Card
-            className="text-center glass-card"
-            style={{
-              background: "linear-gradient(135deg, #74ebd5, #acb6e5)",
-              borderRadius: "12px",
-              boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
-            }}
-          >
+          <Card className="text-center glass-card">
             <Card.Body>
               <Card.Title>Total Vendors</Card.Title>
               <Card.Text>
@@ -128,14 +113,7 @@ export default function VendorManagement() {
           </Card>
         </Col>
         <Col md={6}>
-          <Card
-            className="text-center glass-card"
-            style={{
-              background: "linear-gradient(135deg, #ff9a9e, #fecfef)",
-              borderRadius: "12px",
-              boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
-            }}
-          >
+          <Card className="text-center glass-card">
             <Card.Body>
               <Card.Title>Average Vendor Ranking</Card.Title>
               <Card.Text>
@@ -157,46 +135,18 @@ export default function VendorManagement() {
         </Col>
       </Row>
 
-      {/* Search and Sorting */}
+      {/* Vendor Listings Heading with Search Bar */}
       <Row className="mb-4 d-flex align-items-center justify-content-between">
         <Col md={6}>
-          <h4 style={{ fontWeight: "600", fontSize: "20px" }}>
-            Vendor Listings
-          </h4>
+          <h4>Vendor Listings</h4>
         </Col>
-        <Col md={6}>
-          <InputGroup>
-            <Form.Control
-              type="text"
-              placeholder="Search vendors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                borderRadius: "25px",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-            />
-            <DropdownButton
-              as={InputGroup.Append}
-              title={`Sort By ${sortBy}`}
-              variant="outline-secondary"
-              id="sort-by-dropdown"
-              style={{
-                borderRadius: "25px",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <Dropdown.Item onClick={() => setSortBy("name")}>
-                Name
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => setSortBy("ranking")}>
-                Ranking
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => setSortBy("comments")}>
-                Comments
-              </Dropdown.Item>
-            </DropdownButton>
-          </InputGroup>
+        <Col md={4}>
+          <Form.Control
+            type="text"
+            placeholder="Search vendors..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </Col>
       </Row>
 
