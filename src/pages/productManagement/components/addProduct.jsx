@@ -96,16 +96,7 @@ const AddProduct = ({ show, onHide }) => {
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group className="mb-3" controlId="productCode">
-            <Form.Label>Product Code</Form.Label>
-            <Form.Control
-              type="text"
-              name="productCode"
-              value={newProduct.productCode}
-              onChange={handleInputChange}
-              placeholder="Enter product code"
-            />
-          </Form.Group>
+          {/* Row for Product Name */}
           <Form.Group className="mb-3" controlId="productName">
             <Form.Label>Product Name</Form.Label>
             <Form.Control
@@ -116,6 +107,78 @@ const AddProduct = ({ show, onHide }) => {
               placeholder="Enter product name"
             />
           </Form.Group>
+
+          {/* Row for Product Code and Category */}
+          <Row>
+            <Col>
+              <Form.Group className="mb-3" controlId="productCode">
+                <Form.Label>Product Code</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="productCode"
+                  value={newProduct.productCode}
+                  onChange={handleInputChange}
+                  placeholder="Enter product code"
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group className="mb-3" controlId="productCategory">
+                <Form.Label>Category</Form.Label>
+                <Form.Control
+                  as="select"
+                  multiple
+                  onChange={handleCategoryChange}
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          {/* Row for Price and Stock Level */}
+          <Row>
+            <Col>
+              <Form.Group className="mb-3" controlId="productPrice">
+                <Form.Label>Price</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="price"
+                  value={newProduct.price}
+                  onChange={handleInputChange}
+                  placeholder="Enter price"
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group className="mb-3" controlId="productStockLevel">
+                <Form.Label>Stock Level</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="stockLevel"
+                  value={newProduct.stockLevel}
+                  onChange={handleInputChange}
+                  placeholder="Enter stock level"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Form.Group className="mb-3" controlId="productLowStockThreshold">
+            <Form.Label>Low Stock Threshold</Form.Label>
+            <Form.Control
+              type="number"
+              name="lowStockThreshold"
+              value={newProduct.lowStockThreshold}
+              onChange={handleInputChange}
+              placeholder="Enter low stock threshold"
+            />
+          </Form.Group>
+
           <Form.Group className="mb-3" controlId="productDescription">
             <Form.Label>Description</Form.Label>
             <Form.Control
@@ -127,46 +190,7 @@ const AddProduct = ({ show, onHide }) => {
               placeholder="Enter product description"
             />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="productPrice">
-            <Form.Label>Price</Form.Label>
-            <Form.Control
-              type="number"
-              name="price"
-              value={newProduct.price}
-              onChange={handleInputChange}
-              placeholder="Enter price"
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="productCategory">
-            <Form.Label>Category</Form.Label>
-            <Form.Control as="select" multiple onChange={handleCategoryChange}>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="productStockLevel">
-            <Form.Label>Stock Level</Form.Label>
-            <Form.Control
-              type="number"
-              name="stockLevel"
-              value={newProduct.stockLevel}
-              onChange={handleInputChange}
-              placeholder="Enter stock level"
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="productLowStockThreshold">
-            <Form.Label>Low Stock Threshold</Form.Label>
-            <Form.Control
-              type="number"
-              name="lowStockThreshold"
-              value={newProduct.lowStockThreshold}
-              onChange={handleInputChange}
-              placeholder="Enter low stock threshold"
-            />
-          </Form.Group>
+
           <Form.Group className="mb-3" controlId="productIsFeatured">
             <Form.Check
               type="switch"

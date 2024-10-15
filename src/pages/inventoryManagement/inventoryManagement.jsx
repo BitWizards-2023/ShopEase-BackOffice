@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Card,
@@ -8,86 +8,47 @@ import {
   Col,
   Form,
 } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "../../features/products/productSlice"; // Import the fetch action
 import Notifications from "./components/notifications";
 import CreateProduct from "./components/createProduct";
 import "./InventoryManagement.css";
 
 const InventoryManagement = () => {
-  // Mock inventory data
-  const [inventoryData, setInventoryData] = useState([
-    {
-      id: 1,
-      name: "Laptop",
-      stock: 5,
-      lowStock: 10,
-      price: 1000,
-      pendingOrders: false,
-    },
-    {
-      id: 2,
-      name: "Smartphone",
-      stock: 15,
-      lowStock: 5,
-      price: 500,
-      pendingOrders: true,
-    },
-    {
-      id: 3,
-      name: "Tablet",
-      stock: 0,
-      lowStock: 5,
-      price: 300,
-      pendingOrders: false,
-    },
-    {
-      id: 4,
-      name: "Headphones",
-      stock: 50,
-      lowStock: 10,
-      price: 150,
-      pendingOrders: false,
-    },
-    {
-      id: 5,
-      name: "Smartwatch",
-      stock: 3,
-      lowStock: 5,
-      price: 200,
-      pendingOrders: true,
-    },
-  ]);
+  const dispatch = useDispatch();
+
+  // Fetch products from Redux store
+  const {
+    products = [],
+    status: productStatus,
+    error,
+  } = useSelector((state) => state.products);
 
   // Search query state
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Count of low stock notifications
-  const lowStockItems = inventoryData.filter(
-    (item) => item.stock <= item.lowStock && item.stock > 0
+  // Fetch products when the component mounts
+  useEffect(() => {
+    if (productStatus === "idle") {
+      dispatch(fetchProducts()); // Dispatch the action to fetch products
+    }
+  }, [dispatch, productStatus]);
+
+  // Safeguard: Ensure products is an array
+  const lowStockItems = products.filter(
+    (item) => item.stockLevel <= item.lowStockThreshold && item.stockLevel > 0
   );
-  const outOfStockItems = inventoryData.filter((item) => item.stock === 0);
-  const totalProducts = inventoryData.length;
+  const outOfStockItems = products.filter((item) => item.stockLevel === 0);
+  const totalProducts = products.length;
 
   // Total stock value calculation
-  const totalStockValue = inventoryData.reduce(
-    (total, item) => total + item.stock * item.price,
+  const totalStockValue = products.reduce(
+    (total, item) => total + item.stockLevel * item.price,
     0
   );
 
-  // Handler to add a new product
-  const addProductHandler = (newProduct) => {
-    const newProductData = {
-      ...newProduct,
-      id: inventoryData.length + 1, // Assign new ID
-      stock: parseInt(newProduct.stock),
-      lowStock: parseInt(newProduct.lowStock),
-      price: parseFloat(newProduct.price),
-      pendingOrders: false,
-    };
-    setInventoryData([...inventoryData, newProductData]); // Add the new product
-  };
-
   // Filtered inventory based on search query
-  const filteredInventory = inventoryData.filter((item) =>
+  const filteredInventory = products.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -102,7 +63,7 @@ const InventoryManagement = () => {
 
         {/* Add New Product Component */}
         <div className="ms-auto">
-          <CreateProduct onSave={addProductHandler} />
+          <CreateProduct />
         </div>
       </h2>
 
@@ -170,56 +131,76 @@ const InventoryManagement = () => {
         <Col md={12}>
           <Card className="mb-4">
             <Card.Body>
-              <Table striped bordered hover responsive>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Product Name</th>
-                    <th>Stock Level</th>
-                    <th>Low Stock Threshold</th>
-                    <th>Pending Orders</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredInventory.length > 0 ? (
-                    filteredInventory.map((item) => (
-                      <tr key={item.id}>
-                        <td>{item.id}</td>
-                        <td>{item.name}</td>
-                        <td>
-                          {item.stock}
-                          <ProgressBar
-                            now={(item.stock / item.lowStock) * 100}
-                            variant={
-                              item.stock <= item.lowStock ? "danger" : "success"
-                            }
-                            label={`${item.stock}`}
-                            className="mt-2"
-                          />
-                        </td>
-                        <td>{item.lowStock}</td>
-                        <td>{item.pendingOrders ? "Yes" : "No"}</td>
-                        <td>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            disabled={item.pendingOrders || item.stock === 0}
-                          >
-                            Remove Stock
-                          </Button>
+              {productStatus === "loading" ? (
+                <p>Loading products...</p>
+              ) : productStatus === "failed" ? (
+                <p>Error: {error}</p>
+              ) : (
+                <Table striped bordered hover responsive>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Product Code</th>
+                      <th>Product Name</th>
+                      <th>Price</th>
+                      <th>Stock Level</th>
+                      <th>Low Stock Threshold</th>
+                      <th>Featured</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredInventory.length > 0 ? (
+                      filteredInventory.map((item, index) => (
+                        <tr key={item.id}>
+                          <td>{index + 1}</td>
+                          <td>{item.productCode}</td>
+                          <td>{item.name}</td>
+                          <td>${item.price}</td>
+                          <td>
+                            {item.stockLevel}
+                            <ProgressBar
+                              now={
+                                (item.stockLevel / item.lowStockThreshold) * 100
+                              }
+                              variant={
+                                item.stockLevel <= item.lowStockThreshold
+                                  ? "danger"
+                                  : "success"
+                              }
+                              label={`${item.stockLevel}`}
+                              className="mt-2"
+                            />
+                          </td>
+                          <td>{item.lowStockThreshold}</td>
+                          <td>
+                            {item.isFeatured ? (
+                              <span className="text-success">Yes</span>
+                            ) : (
+                              <span className="text-danger">No</span>
+                            )}
+                          </td>
+                          <td>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={item.stockLevel === 0}
+                            >
+                              Remove Stock
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="9" className="text-center">
+                          No products found.
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="text-center">
-                        No products found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
+                    )}
+                  </tbody>
+                </Table>
+              )}
             </Card.Body>
           </Card>
         </Col>

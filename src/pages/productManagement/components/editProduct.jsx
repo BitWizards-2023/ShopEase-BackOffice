@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { updateProduct, fetchProducts } from "../../../features/products/productSlice";  // Correct import for updateProduct
+import {
+  updateProduct,
+  fetchProducts,
+} from "../../../features/products/productSlice"; // Correct import for updateProduct
 
 const EditProduct = ({ show, onHide, product, onSave, categories }) => {
   const [updatedProduct, setUpdatedProduct] = useState(product);
@@ -19,12 +22,26 @@ const EditProduct = ({ show, onHide, product, onSave, categories }) => {
 
   // Handle category selection (multi-select)
   const handleCategoryChange = (e) => {
-    const selectedOptions = [...e.target.selectedOptions].map((option) => option.value);
+    const selectedOptions = [...e.target.selectedOptions].map(
+      (option) => option.value
+    );
     setUpdatedProduct({ ...updatedProduct, categoryIds: selectedOptions });
   };
 
   const handleSave = async () => {
-    const { id, productCode, name, description, categoryIds, price, stockLevel, lowStockThreshold, attributes, images, isActive } = updatedProduct;
+    const {
+      id,
+      productCode,
+      name,
+      description,
+      categoryIds,
+      price,
+      stockLevel,
+      lowStockThreshold,
+      attributes,
+      images,
+      isActive,
+    } = updatedProduct;
 
     try {
       // Dispatch the updateProduct action to update the product in the backend
@@ -63,17 +80,7 @@ const EditProduct = ({ show, onHide, product, onSave, categories }) => {
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group className="mb-3" controlId="productCode">
-            <Form.Label>Product Code</Form.Label>
-            <Form.Control
-              type="text"
-              name="productCode"
-              value={updatedProduct?.productCode || ""}
-              onChange={handleInputChange}
-              placeholder="Enter product code"
-            />
-          </Form.Group>
-
+          {/* Row for Product Name */}
           <Form.Group className="mb-3" controlId="productName">
             <Form.Label>Product Name</Form.Label>
             <Form.Control
@@ -82,6 +89,79 @@ const EditProduct = ({ show, onHide, product, onSave, categories }) => {
               value={updatedProduct?.name || ""}
               onChange={handleInputChange}
               placeholder="Enter product name"
+            />
+          </Form.Group>
+
+          {/* Row for Product Code and Category */}
+          <Row>
+            <Col>
+              <Form.Group className="mb-3" controlId="productCode">
+                <Form.Label>Product Code</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="productCode"
+                  value={updatedProduct?.productCode || ""}
+                  onChange={handleInputChange}
+                  placeholder="Enter product code"
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group className="mb-3" controlId="productCategory">
+                <Form.Label>Categories</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="categoryIds"
+                  multiple
+                  value={updatedProduct?.categoryIds || []}
+                  onChange={handleCategoryChange}
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          {/* Row for Price and Stock Level */}
+          <Row>
+            <Col>
+              <Form.Group className="mb-3" controlId="productPrice">
+                <Form.Label>Price</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="price"
+                  value={updatedProduct?.price || ""}
+                  onChange={handleInputChange}
+                  placeholder="Enter price"
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group className="mb-3" controlId="productStockLevel">
+                <Form.Label>Stock Level</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="stockLevel"
+                  value={updatedProduct?.stockLevel || ""}
+                  onChange={handleInputChange}
+                  placeholder="Enter stock level"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Form.Group className="mb-3" controlId="productLowStockThreshold">
+            <Form.Label>Low Stock Threshold</Form.Label>
+            <Form.Control
+              type="number"
+              name="lowStockThreshold"
+              value={updatedProduct?.lowStockThreshold || ""}
+              onChange={handleInputChange}
+              placeholder="Enter low stock threshold"
             />
           </Form.Group>
 
@@ -96,57 +176,6 @@ const EditProduct = ({ show, onHide, product, onSave, categories }) => {
             />
           </Form.Group>
 
-          {/* Category IDs (multi-select) */}
-          <Form.Group className="mb-3" controlId="productCategory">
-            <Form.Label>Categories</Form.Label>
-            <Form.Control
-              as="select"
-              name="categoryIds"
-              multiple
-              value={updatedProduct?.categoryIds || []}
-              onChange={handleCategoryChange}
-            >
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="productPrice">
-            <Form.Label>Price</Form.Label>
-            <Form.Control
-              type="number"
-              name="price"
-              value={updatedProduct?.price || ""}
-              onChange={handleInputChange}
-              placeholder="Enter price"
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="productStockLevel">
-            <Form.Label>Stock Level</Form.Label>
-            <Form.Control
-              type="number"
-              name="stockLevel"
-              value={updatedProduct?.stockLevel || ""}
-              onChange={handleInputChange}
-              placeholder="Enter stock level"
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="productLowStockThreshold">
-            <Form.Label>Low Stock Threshold</Form.Label>
-            <Form.Control
-              type="number"
-              name="lowStockThreshold"
-              value={updatedProduct?.lowStockThreshold || ""}
-              onChange={handleInputChange}
-              placeholder="Enter low stock threshold"
-            />
-          </Form.Group>
-
           <Form.Group className="mb-3" controlId="productAttributes">
             <Form.Label>Attributes (Name & Value)</Form.Label>
             <Form.Control
@@ -156,7 +185,9 @@ const EditProduct = ({ show, onHide, product, onSave, categories }) => {
               onChange={(e) =>
                 setUpdatedProduct({
                   ...updatedProduct,
-                  attributes: [{ ...updatedProduct.attributes[0], name: e.target.value }],
+                  attributes: [
+                    { ...updatedProduct.attributes[0], name: e.target.value },
+                  ],
                 })
               }
               placeholder="Enter attribute name"
@@ -168,7 +199,9 @@ const EditProduct = ({ show, onHide, product, onSave, categories }) => {
               onChange={(e) =>
                 setUpdatedProduct({
                   ...updatedProduct,
-                  attributes: [{ ...updatedProduct.attributes[0], value: e.target.value }],
+                  attributes: [
+                    { ...updatedProduct.attributes[0], value: e.target.value },
+                  ],
                 })
               }
               placeholder="Enter attribute value"

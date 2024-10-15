@@ -33,11 +33,15 @@ const Sidebar = () => {
         padding: "10px",
       }}
     >
-      <div className="d-flex align-items-center mb-4">
-        <span className="h4" style={{ fontSize: "1.2rem" }}>
-          Shopear
+      <div
+        className="d-flex align-items-center justify-content-center mb-4"
+        style={{ textAlign: "center" }}
+      >
+        <span className="h4" style={{ fontSize: "2.2rem", fontWeight: "bold" }}>
+          SHOPEASE
         </span>
       </div>
+
       <hr />
       <Nav className="flex-column">
         <Nav.Link

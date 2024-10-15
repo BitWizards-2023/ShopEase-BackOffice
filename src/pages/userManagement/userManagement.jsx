@@ -77,9 +77,7 @@ export default function UserManagement() {
 
   // Calculate statistics
   const totalUsers = users.length;
-  const totalAdmins = users.filter(
-    (user) => user.role === "Administrator"
-  ).length;
+  const totalAdmins = users.filter((user) => user.role === "Admin").length;
   const totalVendors = users.filter((user) => user.role === "Vendor").length;
   const totalCSRs = users.filter((user) => user.role === "CSR").length;
 

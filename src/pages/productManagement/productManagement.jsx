@@ -215,11 +215,15 @@ export default function ProductManagement() {
               <Table striped bordered hover responsive>
                 <thead>
                   <tr>
-                    <th>Product ID</th>
-                    <th>Product Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
                     <th>Image</th>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Category</th>
+                    <th>Stock Level</th>
+                    <th>Low Stock Threshold</th>
+                    <th>Featured</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -228,9 +232,18 @@ export default function ProductManagement() {
                   {filteredProducts.length > 0 ? (
                     filteredProducts.map((product) => (
                       <tr key={product.id}>
-                        <td>{product.id}</td>
+                        <td>
+                          <img
+                            src={product.images[0]}
+                            alt={product.name}
+                            style={{ width: "50px", height: "50px" }}
+                          />
+                        </td>
+                        <td>{product.productCode}</td>
                         <td>{product.name}</td>
-                        {/* Map categoryId to category name */}
+                        <td>{product.description}</td>
+                        <td>${product.price}</td>
+                        {/* Map categoryIds to category names */}
                         <td>
                           {product.categoryIds.map((categoryId) => (
                             <span key={categoryId}>
@@ -238,13 +251,20 @@ export default function ProductManagement() {
                             </span>
                           ))}
                         </td>
-                        <td>${product.price}</td>
+                        <td>{product.stockLevel}</td>
+                        <td>{product.lowStockThreshold}</td>
                         <td>
-                          <img
-                            src={product.images[0]}
-                            alt={product.name}
-                            style={{ width: "50px", height: "50px" }}
-                          />
+                          {product.isFeatured ? (
+                            <span className="text-success">
+                              <FaCheck className="me-1" />
+                              Featured
+                            </span>
+                          ) : (
+                            <span className="text-danger">
+                              <FaTimes className="me-1" />
+                              Not Featured
+                            </span>
+                          )}
                         </td>
                         <td>
                           {product.isActive ? (
@@ -314,7 +334,7 @@ export default function ProductManagement() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="text-center">
+                      <td colSpan="11" className="text-center">
                         No products found.
                       </td>
                     </tr>
