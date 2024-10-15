@@ -1,4 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchUsers,
+  deleteUser,
+  activateUser,
+  approveUser,
+  updateUser,
+  registerUser, // Import registerUser to handle adding new users
+} from "../../features/users/userSlice";
 import {
   Table,
   Button,
@@ -9,67 +18,80 @@ import {
   Dropdown,
   DropdownButton,
 } from "react-bootstrap";
-import { FaPlus, FaBell, FaEdit, FaTrash } from "react-icons/fa";
-import AddUser from "./components/addUser"; // Separate Add User component
-import EditUser from "./components/editUser"; // Separate Edit User component
-import Notifications from "./components/notifications"; // Separate Notifications component
+import { FaPlus, FaEdit, FaTrash, FaEye } from "react-icons/fa";
+import AddUser from "./components/addUser";
+import EditUser from "./components/editUser";
+import Notifications from "./components/notifications";
+import UserDetailModal from "./components/detailUser";
 
 export default function UserManagement() {
-  // Mock data for users
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      role: "Administrator",
-      email: "john@example.com",
-    },
-    { id: 2, name: "Jane Smith", role: "Vendor", email: "jane@example.com" },
-    { id: 3, name: "Alex Johnson", role: "CSR", email: "alex@example.com" },
-  ]);
-
-  // Notifications
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: "User John Doe has been promoted to Administrator." },
-    { id: 2, message: "Vendor Jane Smith has added a new product." },
-  ]);
+  const dispatch = useDispatch();
+  const { users, status, error } = useSelector((state) => state.users);
 
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // Search query state
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
+  const [detailUser, setDetailUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Add a new user
-  const handleAddUser = (newUser) => {
-    setUsers([...users, { ...newUser, id: users.length + 1 }]);
-    setNotifications([
-      ...notifications,
-      {
-        id: notifications.length + 1,
-        message: `User ${newUser.name} has been added.`,
-      },
-    ]);
+  // Fetch users on component mount
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchUsers());
+    }
+  }, [status, dispatch]);
+
+  // Handle adding a new user
+  const handleAddUser = async (newUser) => {
+    await dispatch(registerUser(newUser));
+    await dispatch(fetchUsers()); // Fetch users again after adding a new user
+    setShowAddUserModal(false); // Close modal after adding the user
   };
 
-  // Edit an existing user
-  const handleEditUser = (updatedUser) => {
-    setUsers(users.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
-    setShowEditUserModal(false);
+  // Handle saving the edited user
+  const handleSaveEditUser = async (updatedUser) => {
+    try {
+      await dispatch(updateUser({ id: updatedUser.id, userData: updatedUser }));
+      await dispatch(fetchUsers()); // Refetch users after updating
+      setShowEditUserModal(false); // Close the modal
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
   };
 
-  // Calculate statistics for cards
+  // Delete user handler
+  const handleDeleteUser = (id) => {
+    dispatch(deleteUser(id));
+  };
+
+  // Activate user handler
+  const handleActivateUser = (id) => {
+    dispatch(activateUser(id));
+  };
+
+  // Approve user handler
+  const handleApproveUser = (id) => {
+    dispatch(approveUser(id));
+  };
+
+  // Calculate statistics
   const totalUsers = users.length;
-  const totalAdmins = users.filter(
-    (user) => user.role === "Administrator"
-  ).length;
+  const totalAdmins = users.filter((user) => user.role === "Admin").length;
   const totalVendors = users.filter((user) => user.role === "Vendor").length;
   const totalCSRs = users.filter((user) => user.role === "CSR").length;
 
-  // Filtered users based on search query
+  // Search logic
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchQuery.toLowerCase())
+      (user.firstName?.toLowerCase() || "").includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (user.lastName?.toLowerCase() || "").includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (user.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (user.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -79,7 +101,7 @@ export default function UserManagement() {
         <span className="me-2">User Management</span>
 
         {/* Notifications Icon */}
-        <Notifications notifications={notifications} />
+        <Notifications notifications={[]} />
 
         {/* Add User Button */}
         <div className="ms-auto">
@@ -162,8 +184,12 @@ export default function UserManagement() {
               <Table striped bordered hover responsive>
                 <thead>
                   <tr>
-                    <th>Name</th>
+                    <th>Profile Picture</th>
+                    <th>Username</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
                     <th>Email</th>
+                    <th>Phone Number</th>
                     <th>Role</th>
                     <th>Actions</th>
                   </tr>
@@ -171,8 +197,22 @@ export default function UserManagement() {
                 <tbody>
                   {filteredUsers.map((user) => (
                     <tr key={user.id}>
-                      <td>{user.name}</td>
+                      <td>
+                        <img
+                          src={user.profile_pic}
+                          alt={user.firstName}
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            borderRadius: "50%",
+                          }}
+                        />
+                      </td>
+                      <td>{user.username}</td>
+                      <td>{user.firstName}</td>
+                      <td>{user.lastName}</td>
                       <td>{user.email}</td>
+                      <td>{user.phoneNumber}</td>
                       <td>{user.role}</td>
                       <td>
                         {/* Action Menu */}
@@ -192,8 +232,24 @@ export default function UserManagement() {
                             Edit
                           </Dropdown.Item>
                           <Dropdown.Item>
+                            <FaEye className="me-2" />
+                            View More
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
                             <FaTrash className="me-2" />
                             Delete
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => handleActivateUser(user.id)}
+                          >
+                            Activate
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => handleApproveUser(user.id)}
+                          >
+                            Approve
                           </Dropdown.Item>
                         </DropdownButton>
                       </td>
@@ -206,20 +262,25 @@ export default function UserManagement() {
         </Col>
       </Row>
 
-      {/* Add User Modal */}
+      {/* Modals for Add, Edit, and Detail */}
       <AddUser
         show={showAddUserModal}
         onHide={() => setShowAddUserModal(false)}
-        onSave={handleAddUser}
+        onSave={handleAddUser} // Bind the handleAddUser function
       />
-
-      {/* Edit User Modal */}
       {editUser && (
         <EditUser
           show={showEditUserModal}
           onHide={() => setShowEditUserModal(false)}
           user={editUser}
-          onSave={handleEditUser}
+          onSave={handleSaveEditUser} // Bind handleSaveEditUser to save changes
+        />
+      )}
+      {detailUser && (
+        <UserDetailModal
+          show={showUserDetailModal}
+          onHide={() => setShowUserDetailModal(false)}
+          user={detailUser}
         />
       )}
     </div>

@@ -7,7 +7,7 @@ function Footer() {
         <Row className="mt-0">
           <Col className="text-center">
             <p className="mb-0">
-              &copy; {new Date().getFullYear()} EcomSync. All Rights Reserved.
+              &copy; {new Date().getFullYear()} ShopEase. All Rights Reserved.
             </p>
           </Col>
         </Row>

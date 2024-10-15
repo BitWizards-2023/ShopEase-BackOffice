@@ -16,13 +16,17 @@ import {
   FaEye,
   FaEllipsisV,
   FaBell,
+  FaCheck,
 } from "react-icons/fa";
+import DatePicker from "react-datepicker"; // Make sure to install react-datepicker
+import "react-datepicker/dist/react-datepicker.css";
 import AddOrder from "./components/addOrder"; // Separate Add Order component
 import EditOrder from "./components/editOrder"; // Separate Edit Order component
 import OrderDetails from "./components/detailOrder"; // Separate Order Details component
 import CancelOrderModal from "./components/cancelOrder"; // Separate Cancel Order component
 import MarkDeliveredModal from "./components/markDelivered"; // Separate Mark as Delivered component
 import Notifications from "./components/notifications"; // Separate Notifications component
+import OrderReports from "./components/orderReport"; // Order Reports component
 
 export default function OrderManagement({ userRole }) {
   // Mock data for orders
@@ -34,6 +38,10 @@ export default function OrderManagement({ userRole }) {
       status: "Processing",
       details: "Order for 2 items: Laptop, Headphones.",
       isMultiVendor: true,
+      date: "2023-10-01",
+      paymentStatus: "Pending",
+      shippingAddress: "123 Main St, City, Country",
+      history: [{ date: "2023-10-01", status: "Processing" }],
       products: [
         { name: "Laptop", vendor: "Vendor A", status: "Processing" },
         { name: "Headphones", vendor: "Vendor B", status: "Processing" },
@@ -46,6 +54,13 @@ export default function OrderManagement({ userRole }) {
       status: "Partially Delivered",
       details: "Order for 3 items: Smartphone, Tablet, Smartwatch.",
       isMultiVendor: true,
+      date: "2023-09-15",
+      paymentStatus: "Completed",
+      shippingAddress: "456 Another St, City, Country",
+      history: [
+        { date: "2023-09-15", status: "Processing" },
+        { date: "2023-09-20", status: "Partially Delivered" },
+      ],
       products: [
         { name: "Smartphone", vendor: "Vendor A", status: "Delivered" },
         { name: "Tablet", vendor: "Vendor B", status: "Processing" },
@@ -59,6 +74,13 @@ export default function OrderManagement({ userRole }) {
       status: "Delivered",
       details: "Order for 1 item: Headphones.",
       isMultiVendor: false,
+      date: "2023-08-10",
+      paymentStatus: "Completed",
+      shippingAddress: "789 Example Rd, City, Country",
+      history: [
+        { date: "2023-08-10", status: "Processing" },
+        { date: "2023-08-12", status: "Delivered" },
+      ],
       products: [
         { name: "Headphones", vendor: "Vendor A", status: "Delivered" },
       ],
@@ -74,63 +96,78 @@ export default function OrderManagement({ userRole }) {
   const [orderDetails, setOrderDetails] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null); // Ensure selected order is initialized
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
+  const [filterStatus, setFilterStatus] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
-  // Add a new order
+  // Filtered orders based on search query, status, and date range
+  const filteredOrders = orders
+    .filter((order) => {
+      const matchesSearch =
+        order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.id.toString().includes(searchQuery);
+      const matchesStatus =
+        filterStatus === "" || order.status === filterStatus;
+      const matchesDateRange =
+        (!startDate || new Date(order.date) >= startDate) &&
+        (!endDate || new Date(order.date) <= endDate);
+
+      return matchesSearch && matchesStatus && matchesDateRange;
+    })
+    .sort((a, b) => {
+      if (sortBy === "dateAsc") return new Date(a.date) - new Date(b.date);
+      if (sortBy === "dateDesc") return new Date(b.date) - new Date(a.date);
+      if (sortBy === "amountAsc") return a.totalAmount - b.totalAmount;
+      if (sortBy === "amountDesc") return b.totalAmount - a.totalAmount;
+      return 0;
+    });
+
+  // Function to handle adding a new order
   const handleAddOrder = (newOrder) => {
     setOrders([...orders, { ...newOrder, id: orders.length + 1 }]);
+    setShowAddModal(false); // Close the modal after adding the order
   };
 
-  // Edit an existing order
+  // Function to handle showing the Edit Order Modal
   const handleShowEditModal = (order) => {
-    setEditOrder(order);
-    setShowEditModal(true);
+    setEditOrder(order); // Set the selected order to edit
+    setShowEditModal(true); // Show the edit modal
   };
 
-  // View order details
-  const handleShowDetailsModal = (order) => {
-    setOrderDetails(order);
-    setShowDetailsModal(true);
-  };
-
-  // Show cancel order modal
-  const handleShowCancelModal = (order) => {
-    setSelectedOrder(order);
-    setShowCancelModal(true);
-  };
-
-  // Show mark as delivered modal
-  const handleShowDeliveredModal = (order) => {
-    setSelectedOrder(order);
-    setShowDeliveredModal(true);
-  };
-
-  // Save edited order
+  // Function to handle saving edited order
   const handleSaveEditOrder = (updatedOrder) => {
-    setOrders(orders.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)));
-    setShowEditModal(false);
+    setOrders(
+      orders.map((order) =>
+        order.id === updatedOrder.id ? updatedOrder : order
+      )
+    );
+    setShowEditModal(false); // Close the edit modal after saving the order
   };
 
-  // Cancel an order
+  // Function to handle canceling an order
   const handleCancelOrder = (orderId, cancelNote) => {
     setOrders(
       orders.map((order) =>
         order.id === orderId
-          ? { ...order, status: "Canceled", cancelNote } // Add the cancelNote to the order
+          ? { ...order, status: "Canceled", cancelNote: cancelNote || "" }
           : order
       )
     );
-    setShowCancelModal(false); // Close modal after cancel
+    setShowCancelModal(false); // Close the cancel order modal after updating
   };
 
-  // Mark an order as delivered
+  // Function to handle marking an order or individual items as delivered
   const handleMarkAsDelivered = (orderId, productIndex = null) => {
-    setOrders((prevOrders) => {
-      return prevOrders.map((order) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) => {
         if (order.id === orderId) {
-          if (productIndex !== null) {
+          // If a specific product is being updated in a multi-vendor order
+          if (productIndex !== null && order.products) {
             const updatedProducts = [...order.products];
             updatedProducts[productIndex].status = "Delivered";
 
+            // Check if all products in the order are now delivered
             const allDelivered = updatedProducts.every(
               (product) => product.status === "Delivered"
             );
@@ -141,32 +178,22 @@ export default function OrderManagement({ userRole }) {
               products: updatedProducts,
             };
           } else {
+            // If the entire order is being marked as delivered
             return { ...order, status: "Delivered" };
           }
         }
         return order;
-      });
-    });
-    setShowDeliveredModal(false);
+      })
+    );
+    setShowDeliveredModal(false); // Close the mark as delivered modal after updating
   };
 
-  // Calculate important statistics
-  const totalOrders = orders.length;
-  const processingOrders = orders.filter(
-    (order) => order.status === "Processing"
-  ).length;
-  const deliveredOrders = orders.filter(
-    (order) => order.status === "Delivered"
-  ).length;
-  const canceledOrders = orders.filter(
-    (order) => order.status === "Canceled"
-  ).length;
+  const handleShowDetailsModal = (order) => {
+    setOrderDetails(order); // Set the selected order's details
+    setShowDetailsModal(true); // Show the details modal
+  };
 
-  // Filtered orders based on search query
-  const filteredOrders = orders.filter((order) =>
-    order.customerName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  // UI for filtering and sorting
   return (
     <div>
       {/* Header */}
@@ -181,7 +208,7 @@ export default function OrderManagement({ userRole }) {
         />
 
         {/* Add Order Button */}
-        <div className="ms-auto">
+        {/* <div className="ms-auto">
           <Button
             variant="primary"
             size="sm"
@@ -190,7 +217,7 @@ export default function OrderManagement({ userRole }) {
             <FaPlus className="me-2" />
             Add New Order
           </Button>
-        </div>
+        </div> */}
       </h2>
 
       {/* Row of Cards for Important Information */}
@@ -200,7 +227,7 @@ export default function OrderManagement({ userRole }) {
             <Card.Body>
               <Card.Title>Total Orders</Card.Title>
               <Card.Text>
-                <h3>{totalOrders}</h3>
+                <h3>{orders.length}</h3>
               </Card.Text>
             </Card.Body>
           </Card>
@@ -210,7 +237,12 @@ export default function OrderManagement({ userRole }) {
             <Card.Body>
               <Card.Title>Processing Orders</Card.Title>
               <Card.Text>
-                <h3>{processingOrders}</h3>
+                <h3>
+                  {
+                    orders.filter((order) => order.status === "Processing")
+                      .length
+                  }
+                </h3>
               </Card.Text>
             </Card.Body>
           </Card>
@@ -220,7 +252,12 @@ export default function OrderManagement({ userRole }) {
             <Card.Body>
               <Card.Title>Delivered Orders</Card.Title>
               <Card.Text>
-                <h3>{deliveredOrders}</h3>
+                <h3>
+                  {
+                    orders.filter((order) => order.status === "Delivered")
+                      .length
+                  }
+                </h3>
               </Card.Text>
             </Card.Body>
           </Card>
@@ -230,10 +267,58 @@ export default function OrderManagement({ userRole }) {
             <Card.Body>
               <Card.Title>Canceled Orders</Card.Title>
               <Card.Text>
-                <h3>{canceledOrders}</h3>
+                <h3>
+                  {orders.filter((order) => order.status === "Canceled").length}
+                </h3>
               </Card.Text>
             </Card.Body>
           </Card>
+        </Col>
+      </Row>
+
+      {/* Filter and Sort Controls */}
+      <Row className="mb-3 d-flex align-items-center justify-content-between">
+        <Col md={3}>
+          <Form.Select
+            aria-label="Filter by Status"
+            onChange={(e) => setFilterStatus(e.target.value)}
+            value={filterStatus}
+          >
+            <option value="">All Statuses</option>
+            <option value="Processing">Processing</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Canceled">Canceled</option>
+            <option value="Partially Delivered">Partially Delivered</option>
+          </Form.Select>
+        </Col>
+        <Col md={3}>
+          <DatePicker
+            selected={startDate}
+            onChange={(date) => setStartDate(date)}
+            placeholderText="Start Date"
+            className="form-control"
+          />
+        </Col>
+        <Col md={3}>
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => setEndDate(date)}
+            placeholderText="End Date"
+            className="form-control"
+          />
+        </Col>
+        <Col md={3}>
+          <Form.Select
+            aria-label="Sort by"
+            onChange={(e) => setSortBy(e.target.value)}
+            value={sortBy}
+          >
+            <option value="">Sort By</option>
+            <option value="dateAsc">Date (Asc)</option>
+            <option value="dateDesc">Date (Desc)</option>
+            <option value="amountAsc">Total Amount (Low to High)</option>
+            <option value="amountDesc">Total Amount (High to Low)</option>
+          </Form.Select>
         </Col>
       </Row>
 
@@ -328,6 +413,9 @@ export default function OrderManagement({ userRole }) {
           </Card>
         </Col>
       </Row>
+
+      {/* Order Reports Section */}
+      <OrderReports orders={orders} />
 
       {/* Add Order Modal */}
       <AddOrder

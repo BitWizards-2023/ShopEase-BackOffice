@@ -1,109 +1,106 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Button, Form, Alert } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  Button,
+  Row,
+  Col,
+  ListGroup,
+  Form,
+  Spinner,
+} from "react-bootstrap";
 
 const EditOrder = ({ show, onHide, order, onSave }) => {
   const [updatedOrder, setUpdatedOrder] = useState(order);
-  const [error, setError] = useState(""); // For validation errors
   const [isSaving, setIsSaving] = useState(false); // Loading state for Save
 
+  // Reset the displayed order data when a new order is selected
   useEffect(() => {
     setUpdatedOrder(order);
   }, [order]);
 
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setUpdatedOrder({ ...updatedOrder, [name]: value });
+  // Handle input changes for the status field
+  const handleStatusChange = (e) => {
+    const { value } = e.target;
+    setUpdatedOrder({ ...updatedOrder, status: value });
   };
 
-  // Validate and save the order
+  // Save the updated order status
   const handleSave = () => {
-    // Basic validation: check if all fields are filled out
-    if (
-      !updatedOrder?.customerName ||
-      !updatedOrder?.totalAmount ||
-      !updatedOrder?.details ||
-      !updatedOrder?.status
-    ) {
-      setError("All fields are required.");
-      return;
-    }
-
-    setError(""); // Clear errors if no validation issue
-    setIsSaving(true); // Set saving state
-
-    // Simulate saving with a delay
+    setIsSaving(true); // Show saving indicator
+    // Simulate a delay to represent saving the changes
     setTimeout(() => {
-      onSave(updatedOrder); // Call the save function passed from the parent
-      setIsSaving(false); // Turn off saving state
+      onSave(updatedOrder); // Call the parent function to save the updated status
+      setIsSaving(false); // Hide saving indicator
       onHide(); // Close the modal
-    }, 1000); // Simulate save delay (1 second)
+    }, 1000); // Simulate a 1-second delay for saving
   };
 
   return (
-    <Modal show={show} onHide={onHide}>
+    <Modal show={show} onHide={onHide} size="md">
       <Modal.Header closeButton>
-        <Modal.Title>Edit Order</Modal.Title>
+        <Modal.Title>Order Information</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {/* Validation error alert */}
-        {error && <Alert variant="danger">{error}</Alert>}
-        <Form>
-          <Form.Group className="mb-3">
-            <Form.Label>Customer Name</Form.Label>
-            <Form.Control
-              type="text"
-              name="customerName"
-              value={updatedOrder?.customerName || ""}
-              onChange={handleInputChange}
-              placeholder="Enter customer name"
-              disabled={isSaving} // Disable input when saving
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Total Amount</Form.Label>
-            <Form.Control
-              type="number"
-              name="totalAmount"
-              value={updatedOrder?.totalAmount || ""}
-              onChange={handleInputChange}
-              placeholder="Enter total amount"
-              disabled={isSaving} // Disable input when saving
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Order Details</Form.Label>
-            <Form.Control
-              as="textarea"
-              name="details"
-              value={updatedOrder?.details || ""}
-              onChange={handleInputChange}
-              placeholder="Enter order details"
-              disabled={isSaving} // Disable input when saving
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Status</Form.Label>
-            <Form.Control
-              as="select"
-              name="status"
-              value={updatedOrder?.status || ""}
-              onChange={handleInputChange}
-              disabled={isSaving} // Disable input when saving
-            >
-              <option value="Processing">Processing</option>
-              <option value="Delivered">Delivered</option>
-              <option value="Canceled">Canceled</option>
-            </Form.Control>
-          </Form.Group>
-        </Form>
+        <Row>
+          <Col md={12}>
+            <h5>Customer Information</h5>
+            <p>
+              <strong>Customer Name:</strong>{" "}
+              {updatedOrder?.customerName || "N/A"}
+            </p>
+          </Col>
+        </Row>
+        <hr />
+        <Row>
+          <Col md={12}>
+            <h5>Order Details</h5>
+            <p>
+              <strong>Order Description:</strong>{" "}
+              {updatedOrder?.details || "N/A"}
+            </p>
+            <p>
+              <strong>Total Amount:</strong> $
+              {updatedOrder?.totalAmount || "0.00"}
+            </p>
+          </Col>
+        </Row>
+        <hr />
+        <h5>Order Status</h5>
+        <Form.Group className="mb-3">
+          <Form.Label>Status</Form.Label>
+          <Form.Control
+            as="select"
+            name="status"
+            value={updatedOrder?.status || ""}
+            onChange={handleStatusChange}
+            disabled={isSaving} // Disable the input while saving
+          >
+            <option value="Processing">Processing</option>
+            <option value="Partially Delivered">Partially Delivered</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Canceled">Canceled</option>
+          </Form.Control>
+        </Form.Group>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide} disabled={isSaving}>
-          Cancel
+          Close
         </Button>
         <Button variant="primary" onClick={handleSave} disabled={isSaving}>
-          {isSaving ? "Saving..." : "Save Changes"} {/* Show saving state */}
+          {isSaving ? (
+            <>
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />{" "}
+              Saving...
+            </>
+          ) : (
+            "Save Changes"
+          )}
         </Button>
       </Modal.Footer>
     </Modal>
