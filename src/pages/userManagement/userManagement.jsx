@@ -80,6 +80,9 @@ export default function UserManagement() {
   const totalAdmins = users.filter((user) => user.role === "Admin").length;
   const totalVendors = users.filter((user) => user.role === "Vendor").length;
   const totalCSRs = users.filter((user) => user.role === "CSR").length;
+  const totalCustomers = users.filter(
+    (user) => user.role === "Customer"
+  ).length; // Add this line
 
   // Search logic
   const filteredUsers = users.filter(
@@ -118,8 +121,11 @@ export default function UserManagement() {
 
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
-        <Col md={3}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#f8d7da" }}
+          >
             <Card.Body>
               <Card.Title>Total Users</Card.Title>
               <Card.Text>
@@ -128,8 +134,11 @@ export default function UserManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#d1ecf1" }}
+          >
             <Card.Body>
               <Card.Title>Administrators</Card.Title>
               <Card.Text>
@@ -138,8 +147,11 @@ export default function UserManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#d4edda" }}
+          >
             <Card.Body>
               <Card.Title>Vendors</Card.Title>
               <Card.Text>
@@ -148,12 +160,28 @@ export default function UserManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#fff3cd" }}
+          >
             <Card.Body>
               <Card.Title>CSRs</Card.Title>
               <Card.Text>
                 <h3>{totalCSRs}</h3>
+              </Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#cfe2ff" }}
+          >
+            <Card.Body>
+              <Card.Title>Customers</Card.Title>
+              <Card.Text>
+                <h3>{totalCustomers}</h3>
               </Card.Text>
             </Card.Body>
           </Card>

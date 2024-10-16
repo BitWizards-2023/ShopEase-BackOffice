@@ -103,7 +103,10 @@ export default function VendorManagement() {
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
         <Col md={6}>
-          <Card className="text-center glass-card">
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#d1ecf1" }}
+          >
             <Card.Body>
               <Card.Title>Total Vendors</Card.Title>
               <Card.Text>
@@ -113,12 +116,14 @@ export default function VendorManagement() {
           </Card>
         </Col>
         <Col md={6}>
-          <Card className="text-center glass-card">
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#fef5e7" }}
+          >
             <Card.Body>
               <Card.Title>Average Vendor Ranking</Card.Title>
               <Card.Text>
                 <h3>
-                  {/* Display average ranking */}
                   {vendors.length > 0
                     ? (
                         vendors.reduce(

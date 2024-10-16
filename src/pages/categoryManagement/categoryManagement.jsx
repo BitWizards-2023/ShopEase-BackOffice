@@ -21,7 +21,10 @@ import { useSelector, useDispatch } from "react-redux";
 import AddCategory from "./components/addCategory"; // Separate Add Category component
 import EditCategory from "./components/editCategory"; // Separate Edit Category component
 import CategoryDetails from "./components/detailCategory"; // Separate Category Details component
-import { fetchCategories, deleteCategory } from "../../features/category/categorySlice"; // Redux actions
+import {
+  fetchCategories,
+  deleteCategory,
+} from "../../features/category/categorySlice"; // Redux actions
 
 export default function CategoryManagement() {
   const dispatch = useDispatch();
@@ -66,10 +69,9 @@ export default function CategoryManagement() {
   // Safeguard: Ensure categories is an array and category name exists before using .toLowerCase()
   const filteredCategories = Array.isArray(categories)
     ? categories.filter((category) =>
-      category.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+        category.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     : [];
-
 
   // Calculate important statistics (with safeguard)
   const totalCategories = Array.isArray(categories) ? categories.length : 0;
@@ -79,7 +81,6 @@ export default function CategoryManagement() {
   const inactiveCategories = Array.isArray(categories)
     ? categories.filter((category) => !category.isActive).length
     : 0;
-
 
   return (
     <div>
@@ -102,8 +103,11 @@ export default function CategoryManagement() {
 
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
-        <Col md={4}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#f0f8ff" }}
+          >
             <Card.Body>
               <Card.Title>Total Categories</Card.Title>
               <Card.Text>
@@ -112,8 +116,11 @@ export default function CategoryManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#e6ffe6" }}
+          >
             <Card.Body>
               <Card.Title>Active Categories</Card.Title>
               <Card.Text>
@@ -122,8 +129,11 @@ export default function CategoryManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#ffe6e6" }}
+          >
             <Card.Body>
               <Card.Title>Inactive Categories</Card.Title>
               <Card.Text>
@@ -167,13 +177,17 @@ export default function CategoryManagement() {
                 </thead>
                 <tbody>
                   {filteredCategories.length > 0 ? (
-                    filteredCategories.map((category,index) => (
+                    filteredCategories.map((category, index) => (
                       <tr key={category.id}>
-                        <td>{index+1}</td>
+                        <td>{index + 1}</td>
                         <td>{category.name}</td>
                         <td>
                           {category.imageUrl ? (
-                            <a href={category.imageUrl} target="_blank" rel="noreferrer">
+                            <a
+                              href={category.imageUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
                               View Image
                             </a>
                           ) : (
@@ -250,10 +264,7 @@ export default function CategoryManagement() {
       </Row>
 
       {/* Add Category Modal */}
-      <AddCategory
-        show={showAddModal}
-        onHide={() => setShowAddModal(false)}
-      />
+      <AddCategory show={showAddModal} onHide={() => setShowAddModal(false)} />
 
       {/* Edit Category Modal */}
       <EditCategory

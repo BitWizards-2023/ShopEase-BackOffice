@@ -22,24 +22,45 @@ ChartJS.register(
 );
 
 const OrderReports = ({ orders }) => {
-  // Generate monthly order counts from the orders data
-  const orderCounts = orders.reduce((acc, order) => {
-    const month = new Date(order.date).toLocaleString("default", {
+  // Generate monthly order counts and revenue from the orders data
+  const monthlyData = orders.reduce((acc, order) => {
+    const date = new Date(order.createdAt);
+    const monthYear = date.toLocaleString("default", {
       month: "short",
+      year: "numeric",
     });
-    acc[month] = (acc[month] || 0) + 1;
+
+    if (!acc[monthYear]) {
+      acc[monthYear] = { count: 0, revenue: 0 };
+    }
+
+    acc[monthYear].count += 1;
+    acc[monthYear].revenue += order.totalAmount;
+
     return acc;
   }, {});
 
+  // Prepare labels and datasets for the chart
+  const labels = Object.keys(monthlyData);
+  const orderCounts = labels.map((label) => monthlyData[label].count);
+  const revenues = labels.map((label) => monthlyData[label].revenue.toFixed(2));
+
   // Data structure for the chart
   const data = {
-    labels: Object.keys(orderCounts),
+    labels,
     datasets: [
       {
         label: "Orders per Month",
-        data: Object.values(orderCounts),
+        data: orderCounts,
         backgroundColor: "rgba(54, 162, 235, 0.6)",
         borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1,
+      },
+      {
+        label: "Revenue per Month ($)",
+        data: revenues,
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+        borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
       },
     ],
@@ -54,7 +75,22 @@ const OrderReports = ({ orders }) => {
       },
       title: {
         display: true,
-        text: "Monthly Order Overview",
+        text: "Monthly Order and Revenue Overview",
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: "Count / Revenue ($)",
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: "Month",
+        },
       },
     },
   };

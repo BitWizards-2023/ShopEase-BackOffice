@@ -69,8 +69,11 @@ const InventoryManagement = () => {
 
       {/* Row of Cards for Additional Information */}
       <Row className="mb-4">
-        <Col md={3}>
-          <Card className="glass-card text-center">
+        <Col md>
+          <Card
+            className="glass-card text-center"
+            style={{ backgroundColor: "#e3f2fd" }}
+          >
             <Card.Body>
               <Card.Title>Total Products</Card.Title>
               <Card.Text>
@@ -79,8 +82,11 @@ const InventoryManagement = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="glass-card text-center">
+        <Col md>
+          <Card
+            className="glass-card text-center"
+            style={{ backgroundColor: "#fff3cd" }}
+          >
             <Card.Body>
               <Card.Title>Low Stock Products</Card.Title>
               <Card.Text>
@@ -89,8 +95,11 @@ const InventoryManagement = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="glass-card text-center">
+        <Col md>
+          <Card
+            className="glass-card text-center"
+            style={{ backgroundColor: "#f8d7da" }}
+          >
             <Card.Body>
               <Card.Title>Out of Stock Products</Card.Title>
               <Card.Text>
@@ -99,8 +108,11 @@ const InventoryManagement = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="glass-card text-center">
+        <Col md>
+          <Card
+            className="glass-card text-center"
+            style={{ backgroundColor: "#d4edda" }}
+          >
             <Card.Body>
               <Card.Title>Total Stock Value</Card.Title>
               <Card.Text>
