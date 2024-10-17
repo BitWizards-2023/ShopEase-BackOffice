@@ -144,7 +144,7 @@ const AddUser = ({ show, onHide, onSave }) => {
               value={newUser.role}
               onChange={handleInputChange}
             >
-              <option>Administrator</option>
+              <option>Admin</option>
               <option>Vendor</option>
               <option>CSR</option>
             </Form.Select>

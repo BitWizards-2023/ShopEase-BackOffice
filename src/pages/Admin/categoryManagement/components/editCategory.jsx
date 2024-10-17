@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { updateCategory, fetchCategories } from "../../../features/category/categorySlice"; // Import the update action
+import {
+  updateCategory,
+  fetchCategories,
+} from "../../../../features/category/categorySlice"; // Import the update action
 
 const EditCategory = ({ show, onHide, category }) => {
   const [updatedCategory, setUpdatedCategory] = useState(category);
@@ -36,7 +39,6 @@ const EditCategory = ({ show, onHide, category }) => {
       console.error("Error updating the category: ", error);
     }
   };
-
 
   return (
     <Modal show={show} onHide={onHide}>

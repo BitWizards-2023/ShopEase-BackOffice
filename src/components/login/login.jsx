@@ -13,8 +13,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import loginImage from "../../assets/login.jpg"; // Import the image from the assets
-import { useDispatch, useSelector } from "react-redux"; // Import useDispatch and useSelector
-import { loginUser } from "../../features/auth/authSlice"; // Import the loginUser action
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../../features/auth/authSlice";
+import { jwtDecode } from "jwt-decode";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -23,24 +24,37 @@ const LoginForm = () => {
   // Access authentication state from Redux
   const authStatus = useSelector((state) => state.auth.status);
   const authError = useSelector((state) => state.auth.error);
+  const role2 = useSelector((state) => state.auth.role);
 
   // State to manage form input fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const redirectToDashboard = (role) => {
+    if (role === "Admin") {
+      navigate("/admin");
+    } else if (role === "Vendor") {
+      navigate("/vendor");
+    } else if (role === "CSR") {
+      navigate("/csr");
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
   // Function to handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(loginUser({ email, password })).then((action) => {
-      // Check if the login was successful
       if (action.meta.requestStatus === "fulfilled") {
-        navigate("/dashboard"); // Navigate to the dashboard on successful login
+        const decodedToken = jwtDecode(action.payload.token);
+        const role = decodedToken.role;
+        redirectToDashboard(role);
       }
     });
   };
 
-  // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };

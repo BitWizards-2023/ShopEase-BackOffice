@@ -3,28 +3,38 @@ import "./App.css";
 import Header from "./components/header/header";
 import Footer from "./components/footer/footer";
 import Sidebar from "./components/sidebar/sidebar";
-import Dashboard from "./pages/dashboard/dashboard";
-import User from "./pages/userManagement/userManagement";
-import Product from "./pages/productManagement/productManagement";
-import Category from "./pages/categoryManagement/categoryManagement";
-import Order from "./pages/orderManagement/orderManagement";
-import Inventory from "./pages/inventoryManagement/inventoryManagement";
-import Vendor from "./pages/vendorManagement/vendorManagement";
-import UserProfile from "./components/userProfile/userProfile";
-import LoginForm from "./components/login/login"; // Import your LoginForm
-import SignupForm from "./components/signup/signup"; // Import your SignupForm
+import LoginForm from "./components/login/login";
+import SignupForm from "./components/signup/signup";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import CSRDashboard from "./pages/CSR/CSRDashiboard";
+import VendorDashboard from "./pages/Vendor/VendorDashboard";
+import Unauthorized from "./components/unauthorized/Unauthorized";
+
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { loadUserFromToken } from "./features/auth/authSlice";
+import ProtectedRoute from "./utils/ProtectedRoute/ProtectedRoute";
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(loadUserFromToken());
+  }, [dispatch]);
+
+  const routes = [
+    { path: "/admin", element: <AdminDashboard /> },
+    { path: "/vendor", element: <VendorDashboard /> },
+    { path: "/csr", element: <CSRDashboard /> },
+  ];
+
   return (
     <Router>
       <div className="app-container">
-        {/* Show Sidebar and Header only for authenticated routes */}
         <Routes>
-          {/* Login and Signup Routes */}
           <Route path="/" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
-
-          {/* Authenticated routes */}
+          <Route path="/unauthorized" element={<Unauthorized />} />
           <Route
             path="/*"
             element={
@@ -33,17 +43,18 @@ function App() {
                 <div className="main-content">
                   <Header />
                   <div className="content-area">
-                    {/* Routing setup */}
                     <Routes>
-                      {/* Default route that loads the Dashboard */}
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/user" element={<User />} />
-                      <Route path="/product" element={<Product />} />
-                      <Route path="/category" element={<Category />} />
-                      <Route path="/order" element={<Order />} />
-                      <Route path="/inventory" element={<Inventory />} />
-                      <Route path="/vendor" element={<Vendor />} />
-                      <Route path="/user-profile" element={<UserProfile />} />
+                      {routes.map(({ path, element }) => (
+                        <Route
+                          key={path}
+                          path={path}
+                          element={
+                            <ProtectedRoute path={path}>
+                              {element}
+                            </ProtectedRoute>
+                          }
+                        />
+                      ))}
                     </Routes>
                   </div>
                   <Footer />

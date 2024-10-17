@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { useDispatch, useSelector } from 'react-redux';
-import { uploadImage, addCategory } from '../../../features/category/categorySlice';
+import { useDispatch, useSelector } from "react-redux";
+import {
+  uploadImage,
+  addCategory,
+} from "../../../../features/category/categorySlice";
 
 const AddCategory = ({ show, onHide }) => {
   const dispatch = useDispatch();

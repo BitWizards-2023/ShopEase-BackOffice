@@ -7,21 +7,62 @@ import {
   FaUser,
   FaWarehouse,
   FaUsers,
-  FaCog, // Settings icon
-  FaBook, // New icon for Catalogue Management
+  FaCog,
+  FaBook,
 } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { jwtDecode } from "jwt-decode";
+import permissions from "../../utils/ProtectedRoute/permissions";
+import { NavLink } from "react-router-dom";
 import "./sidebar.css";
 
 const Sidebar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showCatalogueDropdown, setShowCatalogueDropdown] = useState(false); // State for toggling Catalogue Management
+  const [showCatalogueDropdown, setShowCatalogueDropdown] = useState(false);
+
+  const token = useSelector((state) => state.auth.token);
+
+  if (!token) {
+    // User is not logged in
+    return null;
+  }
+
+  let userRole;
+  let userName;
+  try {
+    const decodedToken = jwtDecode(token);
+    userRole = decodedToken.role;
+    userName = decodedToken.name;
+  } catch (error) {
+    return null;
+  }
+
+  const rolePermissions = permissions[userRole];
+
+  if (!rolePermissions) {
+    // Role not found in permissions map
+    return null;
+  }
+
+  const allowedRoutes = rolePermissions.routes;
+
+  // Map icon names to actual icon components
+  const iconComponents = {
+    FaTachometerAlt: <FaTachometerAlt className="me-2" />,
+    FaBoxes: <FaBoxes className="me-2" />,
+    FaClipboardList: <FaClipboardList className="me-2" />,
+    FaUser: <FaUser className="me-2" />,
+    FaWarehouse: <FaWarehouse className="me-2" />,
+    FaUsers: <FaUsers className="me-2" />,
+    FaBook: <FaBook className="me-2" />,
+  };
 
   const handleToggle = () => {
-    setShowDropdown(!showDropdown); // Toggle the settings dropdown visibility
+    setShowDropdown(!showDropdown);
   };
 
   const handleCatalogueToggle = () => {
-    setShowCatalogueDropdown(!showCatalogueDropdown); // Toggle the catalogue dropdown visibility
+    setShowCatalogueDropdown(!showCatalogueDropdown);
   };
 
   return (
@@ -44,74 +85,70 @@ const Sidebar = () => {
 
       <hr />
       <Nav className="flex-column">
-        <Nav.Link
-          href="/dashboard"
-          className="d-flex align-items-center py-2 text-dark sidebar-link mb-3"
-          style={{ fontSize: "0.9rem" }} // Smaller font size
-        >
-          <FaTachometerAlt className="me-2" /> Dashboard
-        </Nav.Link>
-        <Nav.Link
-          href="/user"
-          className="d-flex align-items-center py-2 text-dark sidebar-link mb-3"
-          style={{ fontSize: "0.9rem" }} // Smaller font size
-        >
-          <FaUser className="me-2" /> User Management
-        </Nav.Link>
+        {allowedRoutes.map((routeObj) => {
+          const { path, label, icon, parent } = routeObj;
 
-        {/* Catalogue Management with sub-menus */}
-        <div>
-          <Nav.Link
-            onClick={handleCatalogueToggle} // Toggle Catalogue submenu
-            className="d-flex align-items-center py-2 text-dark sidebar-link mb-3"
-            style={{ cursor: "pointer", fontSize: "0.9rem" }} // Smaller font size
-          >
-            <FaBook className="me-2" /> Catalogue Management
-            <span className="ms-auto" style={{ fontSize: "0.9rem" }}>
-              {showCatalogueDropdown ? "▲" : "▼"} {/* Up or Down arrow */}
-            </span>
-          </Nav.Link>
-          {showCatalogueDropdown && (
-            <div className="ms-3">
-              <Nav.Link
-                href="/category"
-                className="d-flex align-items-center py-2 text-dark sidebar-link mb-2"
-                style={{ fontSize: "0.85rem" }} // Even smaller for sub-menus
-              >
-                Category Management
-              </Nav.Link>
-              <Nav.Link
-                href="/product"
-                className="d-flex align-items-center py-2 text-dark sidebar-link mb-2"
-                style={{ fontSize: "0.85rem" }} // Even smaller for sub-menus
-              >
-                Products Management
-              </Nav.Link>
-            </div>
-          )}
-        </div>
+          if (parent) {
+            // Sub-route, will be handled in the dropdown
+            return null;
+          }
 
-        <Nav.Link
-          href="/order"
-          className="d-flex align-items-center py-2 text-dark sidebar-link mb-3"
-          style={{ fontSize: "0.9rem" }} // Smaller font size
-        >
-          <FaClipboardList className="me-2" /> Order Management
-        </Nav.Link>
-        <Nav.Link
-          href="/inventory"
-          className="d-flex align-items-center py-2 text-dark sidebar-link mb-3"
-          style={{ fontSize: "0.9rem" }} // Smaller font size
-        >
-          <FaWarehouse className="me-2" /> Inventory Management
-        </Nav.Link>
-        <Nav.Link
-          href="/vendor"
-          className="d-flex align-items-center py-2 text-dark sidebar-link mb-3"
-          style={{ fontSize: "0.9rem" }} // Smaller font size
-        >
-          <FaUsers className="me-2" /> Vendor Management
-        </Nav.Link>
+          // Handle the Catalogue Management dropdown
+          if (path === "/catalogue") {
+            return (
+              <div key="catalogue">
+                <Nav.Link
+                  onClick={handleCatalogueToggle}
+                  className="d-flex align-items-center py-2 text-dark sidebar-link mb-3"
+                  style={{ cursor: "pointer", fontSize: "0.9rem" }}
+                >
+                  {iconComponents[icon]}
+                  {label}
+                  <span className="ms-auto" style={{ fontSize: "0.9rem" }}>
+                    {showCatalogueDropdown ? "▲" : "▼"}
+                  </span>
+                </Nav.Link>
+                {showCatalogueDropdown && (
+                  <div className="ms-3">
+                    {/* Render sub-routes under Catalogue Management */}
+                    {allowedRoutes
+                      .filter(
+                        (subRouteObj) => subRouteObj.parent === "/catalogue"
+                      )
+                      .map((subRouteObj) => (
+                        <Nav.Link
+                          as={NavLink}
+                          to={subRouteObj.path}
+                          key={subRouteObj.path}
+                          className="d-flex align-items-center py-2 text-dark sidebar-link mb-2"
+                          style={{ fontSize: "0.85rem" }}
+                          activeClassName="active"
+                        >
+                          {iconComponents[subRouteObj.icon]}
+                          {subRouteObj.label || subRouteObj.path}
+                        </Nav.Link>
+                      ))}
+                  </div>
+                )}
+              </div>
+            );
+          } else {
+            // Regular navigation items
+            return (
+              <Nav.Link
+                as={NavLink}
+                to={path}
+                key={path}
+                className="d-flex align-items-center py-2 text-dark sidebar-link mb-3"
+                style={{ fontSize: "0.9rem" }}
+                activeClassName="active"
+              >
+                {iconComponents[icon]}
+                {label || path}
+              </Nav.Link>
+            );
+          }
+        })}
       </Nav>
 
       {/* User Avatar at the Bottom with Settings Icon */}
@@ -121,18 +158,16 @@ const Sidebar = () => {
           alt="User Avatar"
           className="rounded-circle me-2"
         />
-        <span style={{ fontSize: "0.9rem" }}>Micheal Angelo</span>
+        <span style={{ fontSize: "0.9rem" }}>{userName || "User"}</span>
 
         {/* Dropdown for settings without the default caret */}
         <Dropdown show={showDropdown} onToggle={() => {}} className="ms-4">
-          {" "}
-          {/* Add margin-start */}
           <Dropdown.Toggle
-            as="div" // Use div to fully control the toggle behavior and remove caret
+            as="div"
             id="dropdown-settings"
-            onClick={handleToggle} // Show/Hide dropdown on click
+            onClick={handleToggle}
             className="p-0"
-            style={{ cursor: "pointer" }} // Add pointer cursor for better UX
+            style={{ cursor: "pointer" }}
           >
             <FaCog size={18} className="text-dark" />
           </Dropdown.Toggle>
