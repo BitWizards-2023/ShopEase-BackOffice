@@ -15,7 +15,7 @@ import { FaEdit, FaTrash, FaPlus, FaEllipsisV, FaStar } from "react-icons/fa";
 import AddVendor from "./components/addVendor"; // Separate Add Vendor component
 import VendorDetails from "./components/vendorDetails"; // Separate Vendor Details component
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUsers } from "../../features/users/userSlice";
+import { fetchUsers } from "../../../features/users/userSlice";
 import Notifications from "./components/notifications"; // Separate Notifications component
 
 export default function VendorManagement() {

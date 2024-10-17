@@ -25,11 +25,11 @@ import {
   updateProduct,
   activateProduct,
   deactivateProduct,
-} from "../../features/products/productSlice";
+} from "../../../features/products/productSlice";
 import {
   fetchCategories,
   fetchCategoryById,
-} from "../../features/category/categorySlice"; // Import category actions
+} from "../../../features/category/categorySlice"; // Import category actions
 import AddProduct from "./components/addProduct";
 import EditProduct from "./components/editProduct";
 import ProductDetails from "./components/detailProduct";

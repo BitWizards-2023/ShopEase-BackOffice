@@ -9,7 +9,7 @@ import {
   Form,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "../../features/products/productSlice"; // Import the fetch action
+import { fetchProducts } from "../../../features/products/productSlice"; // Import the fetch action
 import Notifications from "./components/notifications";
 import CreateProduct from "./components/createProduct";
 import "./InventoryManagement.css";

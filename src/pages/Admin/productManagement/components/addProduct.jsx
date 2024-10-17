@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addProduct,
   uploadImage,
-} from "../../../features/products/productSlice"; // Import actions
-import { fetchCategories } from "../../../features/category/categorySlice"; // Fetch categories for dropdown
+} from "../../../../features/products/productSlice"; // Import actions
+import { fetchCategories } from "../../../../features/category/categorySlice"; // Fetch categories for dropdown
 
 const AddProduct = ({ show, onHide }) => {
   const dispatch = useDispatch();

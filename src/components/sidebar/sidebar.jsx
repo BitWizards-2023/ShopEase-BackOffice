@@ -150,33 +150,6 @@ const Sidebar = () => {
           }
         })}
       </Nav>
-
-      {/* User Avatar at the Bottom with Settings Icon */}
-      <div className="mt-auto d-flex align-items-center">
-        <img
-          src="https://via.placeholder.com/40"
-          alt="User Avatar"
-          className="rounded-circle me-2"
-        />
-        <span style={{ fontSize: "0.9rem" }}>{userName || "User"}</span>
-
-        {/* Dropdown for settings without the default caret */}
-        <Dropdown show={showDropdown} onToggle={() => {}} className="ms-4">
-          <Dropdown.Toggle
-            as="div"
-            id="dropdown-settings"
-            onClick={handleToggle}
-            className="p-0"
-            style={{ cursor: "pointer" }}
-          >
-            <FaCog size={18} className="text-dark" />
-          </Dropdown.Toggle>
-          <Dropdown.Menu align="end">
-            <Dropdown.Item href="/user-profile">Profile Settings</Dropdown.Item>
-            <Dropdown.Item href="/">Logout</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      </div>
     </div>
   );
 };
