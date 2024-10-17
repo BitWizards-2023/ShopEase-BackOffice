@@ -1,20 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Form, Button, Row, Col, Modal, Card, Badge } from "react-bootstrap";
 import "./userProfile.css"; // Import custom CSS for Glassmorphism
 
 const UserProfile = () => {
-  // Initial user profile data
-  const [userData, setUserData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "johndoe@example.com",
-    phone: "123-456-7890",
-    profileImage: "https://via.placeholder.com/150",
-    role: "Administrator", // New field for user role
-  });
+  // Get user data from Redux store
+  const user = useSelector((state) => state.auth.user);
 
   // State for editing
   const [isEditing, setIsEditing] = useState(false);
+
+  // State for user data, initialized with user from Redux or default values
+  const [userData, setUserData] = useState({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
+    phone: user?.phoneNumber || "",
+    profileImage: user?.profile_pic || "https://via.placeholder.com/150",
+    role: user?.role || "User",
+  });
+
+  // Update local state when the user data from Redux changes
+  useEffect(() => {
+    if (user) {
+      setUserData({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phoneNumber,
+        profileImage: user.profile_pic,
+        role: user.role,
+      });
+    }
+  }, [user]);
 
   // Password change state
   const [passwordModal, setPasswordModal] = useState(false);

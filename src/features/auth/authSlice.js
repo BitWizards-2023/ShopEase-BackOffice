@@ -1,7 +1,6 @@
-// src/features/auth/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/axios";
-import { jwtDecode } from "jwt-decode"; // Make sure to use the correct import for jwt-decode
+import { jwtDecode } from "jwt-decode"; // Correct import for jwt-decode
 
 // Initial state
 const initialState = {
@@ -14,33 +13,41 @@ const initialState = {
 };
 
 // Async thunk for login
-export const loginUser = createAsyncThunk(
+export const signupUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email, password }, { dispatch, rejectWithValue }) => {
     try {
       const response = await api.post("/v1/Auth/login", { email, password });
-      return response.data.data; // Returns the token data from the response
+      const tokenData = response.data.data;
+
+      // Decode the token and fetch user details
+      const decodedToken = jwtDecode(tokenData.token);
+
+      // Dispatch fetchUserDetails after login
+      await dispatch(fetchUserDetails({ token: tokenData.token }));
+
+      return {
+        token: tokenData.token,
+        refreshToken: tokenData.refreshToken,
+        role: decodedToken.role,
+      };
     } catch (error) {
-      if (!error.response) {
-        throw error;
-      }
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response ? error.response.data : error);
     }
   }
 );
 
-// Async thunk for sign-up
-export const signupUser = createAsyncThunk(
-  "auth/signupUser",
-  async (formData, { rejectWithValue }) => {
+// Async thunk to fetch user details from the /Auth/me endpoint
+export const fetchUserDetails = createAsyncThunk(
+  "auth/fetchUserDetails",
+  async ({ token }, { rejectWithValue }) => {
     try {
-      const response = await api.post("/v1/Auth/register", formData);
-      return response.data.data; // Assuming the API returns token data
+      const response = await api.get("/v1/Auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data.data; // Return user data
     } catch (error) {
-      if (!error.response) {
-        throw error;
-      }
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response ? error.response.data : error);
     }
   }
 );
@@ -48,25 +55,28 @@ export const signupUser = createAsyncThunk(
 // Async thunk to load user from token (on app initialization)
 export const loadUserFromToken = createAsyncThunk(
   "auth/loadUserFromToken",
-  async (_, { rejectWithValue }) => {
+  async (_, { dispatch, rejectWithValue }) => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
         const currentTime = Date.now() / 1000; // in seconds
+
         if (decodedToken.exp < currentTime) {
           localStorage.removeItem("token");
           localStorage.removeItem("refreshToken");
           return rejectWithValue("Token expired");
         } else {
-          const role = decodedToken.role;
           const refreshToken = localStorage.getItem("refreshToken") || null;
-          const user = {
-            id: decodedToken.id,
-            email: decodedToken.email,
-            name: decodedToken.name, // Adjust based on your token payload
+
+          // Fetch user details with token
+          await dispatch(fetchUserDetails({ token }));
+
+          return {
+            token,
+            refreshToken,
+            role: decodedToken.role,
           };
-          return { token, role, refreshToken, user };
         }
       } catch (error) {
         localStorage.removeItem("token");
@@ -103,35 +113,7 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(loginUser.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.token = action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
-        localStorage.setItem("token", action.payload.token);
-        localStorage.setItem("refreshToken", action.payload.refreshToken);
-
-        try {
-          const decodedToken = jwtDecode(action.payload.token);
-          state.role = decodedToken.role;
-          state.user = {
-            id: decodedToken.id,
-            email: decodedToken.email,
-            name: decodedToken.name, // Adjust as necessary
-          };
-        } catch (error) {
-          state.role = null;
-          state.user = null;
-          console.error("Failed to decode token:", error);
-        }
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload?.message || "Login failed";
-      })
+      // Handling loginUser thunk
       .addCase(signupUser.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -140,27 +122,31 @@ const authSlice = createSlice({
         state.status = "succeeded";
         state.token = action.payload.token;
         state.refreshToken = action.payload.refreshToken;
+        state.role = action.payload.role;
+
+        // Store token in localStorage
         localStorage.setItem("token", action.payload.token);
         localStorage.setItem("refreshToken", action.payload.refreshToken);
-
-        try {
-          const decodedToken = jwtDecode(action.payload.token);
-          state.role = decodedToken.role;
-          state.user = {
-            id: decodedToken.id,
-            email: decodedToken.email,
-            name: decodedToken.name,
-          };
-        } catch (error) {
-          state.role = null;
-          state.user = null;
-          console.error("Failed to decode token:", error);
-        }
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload?.message || "Sign-up failed";
+        state.error = action.payload?.message || "Login failed";
       })
+
+      // Handling fetchUserDetails thunk
+      .addCase(fetchUserDetails.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchUserDetails.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.user = action.payload; // Store the user details
+      })
+      .addCase(fetchUserDetails.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload?.message || "Failed to fetch user details";
+      })
+
+      // Handling loadUserFromToken thunk
       .addCase(loadUserFromToken.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -170,7 +156,6 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.refreshToken = action.payload.refreshToken;
         state.role = action.payload.role;
-        state.user = action.payload.user;
       })
       .addCase(loadUserFromToken.rejected, (state, action) => {
         state.status = "failed";

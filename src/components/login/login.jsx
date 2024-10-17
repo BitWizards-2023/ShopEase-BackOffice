@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import loginImage from "../../assets/login.jpg"; // Import the image from the assets
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../../features/auth/authSlice";
+import { signupUser } from "../../features/auth/authSlice";
 import { jwtDecode } from "jwt-decode";
 
 const LoginForm = () => {
@@ -46,7 +46,7 @@ const LoginForm = () => {
   // Function to handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(loginUser({ email, password })).then((action) => {
+    dispatch(signupUser({ email, password })).then((action) => {
       if (action.meta.requestStatus === "fulfilled") {
         const decodedToken = jwtDecode(action.payload.token);
         const role = decodedToken.role;

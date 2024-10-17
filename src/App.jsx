@@ -14,6 +14,7 @@ import AdminCategoryManagement from "./pages/Admin/categoryManagement/categoryMa
 import AdminProductManagement from "./pages/Admin/productManagement/productManagement";
 import AdminVendorManagement from "./pages/Admin/vendorManagement/vendorManagement";
 import AdminInventoryManagement from "./pages/Admin/inventoryManagement/inventoryManagement";
+import UserProfile from "./components/userProfile/userProfile";
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -47,6 +48,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
+          <Route path="/user-profile" element={<UserProfile />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route
             path="/*"

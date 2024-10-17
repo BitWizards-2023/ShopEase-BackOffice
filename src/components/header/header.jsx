@@ -1,36 +1,26 @@
-// components/header/Header.jsx
 import React, { useState } from "react";
-import { Container, Form, Navbar, Dropdown, Image } from "react-bootstrap";
+import { Container, Dropdown, Image, Navbar } from "react-bootstrap";
 import { FaBell } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
-import { jwtDecode } from "jwt-decode";
 import { logout } from "../../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 
 function Header() {
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
+
   const [notifications] = useState([
     { id: 1, message: "Order #123 has been delivered." },
     { id: 2, message: "New user registered." },
     { id: 3, message: "Inventory running low." },
   ]);
 
-  // Get the token from Redux store
-  const token = useSelector((state) => state.auth.token);
+  const user = useSelector((state) => state.auth.user);
 
-  let userName = "User";
-  let userEmail = "";
-  if (token) {
-    try {
-      const decodedToken = jwtDecode(token);
-      userName = decodedToken.name || "User";
-      userEmail = decodedToken.email || "";
-    } catch (error) {
-      console.error("Failed to decode token:", error);
-    }
-  }
+  // Extract user information from the Redux store
+  const userName = user ? `${user.firstName} ${user.lastName}` : "User";
+  const userEmail = user?.email || "";
+  const profileImage = user?.profile_pic || "https://via.placeholder.com/40";
 
   const handleLogout = () => {
     dispatch(logout());
@@ -40,7 +30,6 @@ function Header() {
   return (
     <Navbar expand="lg" className="bg-body-tertiary px-3 py-2">
       <Container fluid className="align-items-center">
-        {/* Notification Icon */}
         <Dropdown align="end" className="me-3">
           <Dropdown.Toggle
             variant="light"
@@ -77,7 +66,7 @@ function Header() {
             className="d-flex align-items-center p-0"
           >
             <Image
-              src="https://via.placeholder.com/40"
+              src={profileImage}
               roundedCircle
               className="me-2"
               width={40}
