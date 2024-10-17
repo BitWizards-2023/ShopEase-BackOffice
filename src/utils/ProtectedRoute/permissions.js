@@ -40,10 +40,13 @@ const permissions = {
       // Add more routes as needed
     ],
     components: [
-      "UserManagement",
-      "VendorManagement",
-      "InventoryManagement",
+      "AdminUserManagement",
+      "AdminVendorManagement",
+      "AdminInventoryManagement",
       "AdminDashboard",
+      "AdminCategoryManagement",
+      "AdminProductManagement",
+      "AdminVendorManagement",
     ],
     //actions: ["CREATE_USER", "DELETE_USER", "VIEW_REPORTS"],
   },

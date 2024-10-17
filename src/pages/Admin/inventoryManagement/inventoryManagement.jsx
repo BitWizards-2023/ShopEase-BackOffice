@@ -14,7 +14,7 @@ import Notifications from "./components/notifications";
 import CreateProduct from "./components/createProduct";
 import "./InventoryManagement.css";
 
-const InventoryManagement = () => {
+const AdminInventoryManagement = () => {
   const dispatch = useDispatch();
 
   // Fetch products from Redux store
@@ -209,4 +209,4 @@ const InventoryManagement = () => {
   );
 };
 
-export default InventoryManagement;
+export default AdminInventoryManagement;

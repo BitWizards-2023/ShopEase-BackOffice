@@ -5,10 +5,15 @@ import Footer from "./components/footer/footer";
 import Sidebar from "./components/sidebar/sidebar";
 import LoginForm from "./components/login/login";
 import SignupForm from "./components/signup/signup";
-import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminDashboard from "./pages/Admin/dashboard/AdminDashboard";
 import CSRDashboard from "./pages/CSR/CSRDashiboard";
 import VendorDashboard from "./pages/Vendor/VendorDashboard";
 import Unauthorized from "./components/unauthorized/Unauthorized";
+import AdminUserManagement from "./pages/Admin/userManagement/userManagement";
+import AdminCategoryManagement from "./pages/Admin/categoryManagement/categoryManagement";
+import AdminProductManagement from "./pages/Admin/productManagement/productManagement";
+import AdminVendorManagement from "./pages/Admin/vendorManagement/vendorManagement";
+import AdminInventoryManagement from "./pages/Admin/inventoryManagement/inventoryManagement";
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -26,6 +31,14 @@ function App() {
     { path: "/admin", element: <AdminDashboard /> },
     { path: "/vendor", element: <VendorDashboard /> },
     { path: "/csr", element: <CSRDashboard /> },
+    { path: "/admin/user-management", element: <AdminUserManagement /> },
+    { path: "/admin/category", element: <AdminCategoryManagement /> },
+    { path: "/admin/product", element: <AdminProductManagement /> },
+    { path: "/admin/vendor-management", element: <AdminVendorManagement /> },
+    {
+      path: "/admin/inventory-management",
+      element: <AdminInventoryManagement />,
+    },
   ];
 
   return (

@@ -32,7 +32,7 @@ ChartJS.register(
   Legend
 );
 
-const Dashboard = () => {
+const AdminDashboard = () => {
   // State for selected year in the filter
   const [selectedYear, setSelectedYear] = useState("2024");
 
@@ -261,4 +261,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default AdminDashboard;

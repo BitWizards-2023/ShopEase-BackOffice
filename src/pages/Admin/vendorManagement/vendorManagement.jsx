@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUsers } from "../../../features/users/userSlice";
 import Notifications from "./components/notifications"; // Separate Notifications component
 
-export default function VendorManagement() {
+export default function AdminVendorManagement() {
   // Mock data for vendors
   // const [vendors, setVendors] = useState([
   //   {

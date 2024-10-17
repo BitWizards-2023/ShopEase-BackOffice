@@ -26,7 +26,7 @@ import {
   deleteCategory,
 } from "../../../features/category/categorySlice"; // Redux actions
 
-export default function CategoryManagement() {
+export default function AdminCategoryManagement() {
   const dispatch = useDispatch();
 
   // Get categories from Redux store

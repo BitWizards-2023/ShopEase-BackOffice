@@ -5,8 +5,11 @@ import { FaBell } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { jwtDecode } from "jwt-decode";
 import { logout } from "../../features/auth/authSlice";
+import { useNavigate } from "react-router-dom";
 
 function Header() {
+  const navigate = useNavigate();
+
   const dispatch = useDispatch();
   const [notifications] = useState([
     { id: 1, message: "Order #123 has been delivered." },
@@ -31,7 +34,7 @@ function Header() {
 
   const handleLogout = () => {
     dispatch(logout());
-    // Optionally redirect to login page
+    navigate("/");
   };
 
   return (

@@ -24,7 +24,7 @@ import EditUser from "./components/editUser";
 import Notifications from "./components/notifications";
 import UserDetailModal from "./components/detailUser";
 
-export default function UserManagement() {
+export default function AdminUserManagement() {
   const dispatch = useDispatch();
   const { users, status, error } = useSelector((state) => state.users);
 

@@ -34,7 +34,7 @@ import AddProduct from "./components/addProduct";
 import EditProduct from "./components/editProduct";
 import ProductDetails from "./components/detailProduct";
 
-export default function ProductManagement() {
+export default function AdminProductManagement() {
   const dispatch = useDispatch();
 
   // Fetch products and categories from Redux store
