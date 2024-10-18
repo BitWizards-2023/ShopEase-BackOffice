@@ -6,7 +6,7 @@ import {
   activateUser,
   approveUser,
   updateUser,
-  registerUser, // Import registerUser to handle adding new users
+  registerUser,
 } from "../../../features/users/userSlice";
 import {
   Table,

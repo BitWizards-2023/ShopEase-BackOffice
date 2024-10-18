@@ -92,26 +92,8 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
+          <Route path="/user-profile" element={<UserProfile />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-
-          {/* Protected Routes */}
-          <Route
-            path="/user-profile"
-            element={
-              <ProtectedRoute path="/user-profile">
-                <>
-                  <Sidebar />
-                  <div className="main-content">
-                    <Header />
-                    <div className="content-area">
-                      <UserProfile />
-                    </div>
-                    <Footer />
-                  </div>
-                </>
-              </ProtectedRoute>
-            }
-          />
 
           <Route
             path="/*"

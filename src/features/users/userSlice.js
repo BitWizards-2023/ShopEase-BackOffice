@@ -51,11 +51,35 @@ export const updateUser = createAsyncThunk(
       const response = await axios.put(`/v1/User/${id}`, userData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
         },
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Update FCM Token
+export const updateFCMToken = createAsyncThunk(
+  "users/updateFCMToken",
+  async (fcmToken, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        "/v1/User/update-fcm-token",
+        { fcmToken }, // Request body
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data; // Assuming the response contains the updated user data
+    } catch (error) {
+      // Handle errors
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -72,7 +96,7 @@ export const deleteUser = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -82,14 +106,18 @@ export const activateUser = createAsyncThunk(
   "users/activateUser",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/v1/User/${id}/activate`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await axios.patch(
+        `/v1/User/${id}/activate`,
+        {}, // Empty body if no data is needed
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -99,14 +127,18 @@ export const approveUser = createAsyncThunk(
   "users/approveUser",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/v1/User/${id}/approve`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await axios.patch(
+        `/v1/User/${id}/approve`,
+        {}, // Empty body if no data is needed
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -125,6 +157,7 @@ const userSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // Fetch Users
       .addCase(fetchUsers.pending, (state) => {
         state.status = "loading";
       })
@@ -136,24 +169,53 @@ const userSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       })
+
+      // Register User
       .addCase(registerUser.fulfilled, (state, action) => {
         state.users.push(action.payload); // Add new user to the list
       })
+
+      // Update User
       .addCase(updateUser.fulfilled, (state, action) => {
+        const updatedUser = action.payload.data; // Adjust based on your API response structure
         const index = state.users.findIndex(
-          (user) => user.id === action.meta.arg.id
+          (user) => user.id === updatedUser.id
         );
         if (index !== -1) {
-          state.users[index] = action.payload;
+          state.users[index] = updatedUser;
         }
       })
+
+      // Update FCM Token
+      .addCase(updateFCMToken.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(updateFCMToken.fulfilled, (state, action) => {
+        const updatedUser = action.payload.data; // Adjust based on your API response structure
+        const index = state.users.findIndex(
+          (user) => user.id === updatedUser.id
+        );
+        if (index !== -1) {
+          state.users[index] = updatedUser;
+        }
+      })
+      .addCase(updateFCMToken.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+
+      // Delete User
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.users = state.users.filter((user) => user.id !== action.meta.arg);
       })
+
+      // Activate User
       .addCase(activateUser.fulfilled, (state, action) => {
         const user = state.users.find((user) => user.id === action.meta.arg);
         if (user) user.isActive = true;
       })
+
+      // Approve User
       .addCase(approveUser.fulfilled, (state, action) => {
         const user = state.users.find((user) => user.id === action.meta.arg);
         if (user) user.isApproved = true;

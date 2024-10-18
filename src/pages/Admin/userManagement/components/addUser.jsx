@@ -1,3 +1,5 @@
+// components/admin/userManagement/components/AddUser.jsx
+
 import React, { useState } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 
@@ -37,6 +39,12 @@ const AddUser = ({ show, onHide, onSave }) => {
 
   // Handle saving the new user
   const handleSave = () => {
+    // Basic validation (optional)
+    if (!newUser.username || !newUser.email || !newUser.password) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
     onSave(newUser); // Pass the new user data to the parent component for saving
     onHide(); // Close the modal
   };
@@ -50,13 +58,16 @@ const AddUser = ({ show, onHide, onSave }) => {
         <Form>
           {/* Username */}
           <Form.Group className="mb-3">
-            <Form.Label>Username</Form.Label>
+            <Form.Label>
+              Username <span className="text-danger">*</span>
+            </Form.Label>
             <Form.Control
               type="text"
               name="username"
               value={newUser.username}
               onChange={handleInputChange}
               placeholder="Enter username"
+              required
             />
           </Form.Group>
 
@@ -64,25 +75,31 @@ const AddUser = ({ show, onHide, onSave }) => {
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>First Name</Form.Label>
+                <Form.Label>
+                  First Name <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="firstName"
                   value={newUser.firstName}
                   onChange={handleInputChange}
                   placeholder="Enter first name"
+                  required
                 />
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Last Name</Form.Label>
+                <Form.Label>
+                  Last Name <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="lastName"
                   value={newUser.lastName}
                   onChange={handleInputChange}
                   placeholder="Enter last name"
+                  required
                 />
               </Form.Group>
             </Col>
@@ -90,25 +107,31 @@ const AddUser = ({ show, onHide, onSave }) => {
 
           {/* Email */}
           <Form.Group className="mb-3">
-            <Form.Label>Email</Form.Label>
+            <Form.Label>
+              Email <span className="text-danger">*</span>
+            </Form.Label>
             <Form.Control
               type="email"
               name="email"
               value={newUser.email}
               onChange={handleInputChange}
               placeholder="Enter email"
+              required
             />
           </Form.Group>
 
           {/* Password */}
           <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
+            <Form.Label>
+              Password <span className="text-danger">*</span>
+            </Form.Label>
             <Form.Control
               type="password"
               name="password"
               value={newUser.password}
               onChange={handleInputChange}
               placeholder="Enter password"
+              required
             />
           </Form.Group>
 
@@ -138,15 +161,19 @@ const AddUser = ({ show, onHide, onSave }) => {
 
           {/* Role */}
           <Form.Group className="mb-3">
-            <Form.Label>Role</Form.Label>
+            <Form.Label>
+              Role <span className="text-danger">*</span>
+            </Form.Label>
             <Form.Select
               name="role"
               value={newUser.role}
               onChange={handleInputChange}
+              required
             >
               <option>Admin</option>
               <option>Vendor</option>
               <option>CSR</option>
+              <option>User</option>
             </Form.Select>
           </Form.Group>
 

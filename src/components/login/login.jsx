@@ -1,5 +1,6 @@
 // src/components/LoginForm.jsx
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Row,
@@ -12,10 +13,15 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import loginImage from "../../assets/login.jpg"; // Import the image from the assets
+import loginImage from "../../assets/login.jpg"; // Ensure the path is correct
 import { useDispatch, useSelector } from "react-redux";
-import { signupUser } from "../../features/auth/authSlice";
-import { jwtDecode } from "jwt-decode";
+import { signupUser } from "../../features/auth/authSlice"; // Adjust the path as needed
+import { updateFCMToken } from "../../features/users/userSlice"; // Import the updateFCMToken thunk
+import {
+  retrieveFCMToken,
+  handleIncomingMessages,
+  handleTokenRefresh,
+} from "../../conf/firebase"; // Adjust the path based on your project structure
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -24,13 +30,80 @@ const LoginForm = () => {
   // Access authentication state from Redux
   const authStatus = useSelector((state) => state.auth.status);
   const authError = useSelector((state) => state.auth.error);
-  const role2 = useSelector((state) => state.auth.role);
+  const role = useSelector((state) => state.auth.role);
+  const user = useSelector((state) => state.auth.user); // Assuming you store user data
+
+  console.log(user);
 
   // State to manage form input fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // State for notifications
+  const [notification, setNotification] = useState(null);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const sendFCMTokenToBackend = async (token) => {
+    try {
+      const userId = user.id;
+      console.log(user);
+
+      await dispatch(updateFCMToken(token)).unwrap();
+
+      console.log("FCM Token sent to backend successfully.");
+    } catch (error) {
+      console.error("Error sending FCM token to backend:", error);
+    }
+  };
+
+  // Function to handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Dispatch loginUser action
+    try {
+      const actionResult = await dispatch(
+        signupUser({ email, password })
+      ).unwrap();
+
+      // After successful login, retrieve FCM token
+      const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY; // Replace with your actual VAPID key
+      const fcmToken = await retrieveFCMToken(vapidKey);
+
+      if (fcmToken) {
+        await sendFCMTokenToBackend(fcmToken);
+      }
+
+      // Handle incoming messages while the app is in the foreground
+      handleIncomingMessages((payload) => {
+        setNotification({
+          title: payload.notification.title,
+          body: payload.notification.body,
+        });
+      });
+
+      // Handle token refresh
+      handleTokenRefresh(vapidKey, async (newToken) => {
+        try {
+          await sendFCMTokenToBackend(newToken);
+        } catch (error) {
+          console.error("Error updating refreshed FCM token:", error);
+        }
+      });
+
+      // Redirect based on user role
+      redirectToDashboard(actionResult.role);
+    } catch (error) {
+      console.error("Login failed:", error);
+      // Error handling is managed by Redux state (authError)
+    }
+  };
+
+  // Function to redirect user based on role
   const redirectToDashboard = (role) => {
     if (role === "Admin") {
       navigate("/admin");
@@ -41,22 +114,6 @@ const LoginForm = () => {
     } else {
       navigate("/dashboard");
     }
-  };
-
-  // Function to handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch(signupUser({ email, password })).then((action) => {
-      if (action.meta.requestStatus === "fulfilled") {
-        const decodedToken = jwtDecode(action.payload.token);
-        const role = decodedToken.role;
-        redirectToDashboard(role);
-      }
-    });
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
   };
 
   return (
@@ -94,6 +151,18 @@ const LoginForm = () => {
             {authStatus === "failed" && (
               <Alert variant="danger" className="text-center">
                 {authError || "Failed to login. Please check your credentials."}
+              </Alert>
+            )}
+
+            {/* Display notification */}
+            {notification && (
+              <Alert
+                variant="info"
+                onClose={() => setNotification(null)}
+                dismissible
+              >
+                <Alert.Heading>{notification.title}</Alert.Heading>
+                <p>{notification.body}</p>
               </Alert>
             )}
 
