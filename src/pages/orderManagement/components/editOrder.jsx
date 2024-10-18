@@ -56,7 +56,7 @@ const EditOrder = ({ show, onHide, order }) => {
       setIsSaving((prev) => ({ ...prev, [index]: false })); // Reset saving state for the item
     }
   };
-  
+
   return (
     <Modal show={show} onHide={onHide} size="md">
       <Modal.Header closeButton>
@@ -119,8 +119,8 @@ const EditOrder = ({ show, onHide, order }) => {
                         disabled={isSaving[index]} // Disable the input while saving
                       >
                         <option value="Processing">Processing</option>
-                        <option value="Partially Delivered">
-                          Partially Delivered
+                        <option value="Out for Delivery">
+                          Out for Delivery
                         </option>
                         <option value="Delivered">Delivered</option>
                         <option value="Canceled">Canceled</option>

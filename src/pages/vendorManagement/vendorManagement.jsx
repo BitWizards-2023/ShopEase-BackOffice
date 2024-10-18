@@ -1,82 +1,67 @@
 import React, { useEffect, useState } from "react";
 import {
   Table,
-  Button,
   Row,
   Col,
   Card,
   Form,
-  Dropdown,
-  DropdownButton,
   OverlayTrigger,
   Tooltip,
+  Button,
 } from "react-bootstrap";
-import { FaEdit, FaTrash, FaPlus, FaEllipsisV, FaStar } from "react-icons/fa";
-import AddVendor from "./components/addVendor"; // Separate Add Vendor component
-import VendorDetails from "./components/vendorDetails"; // Separate Vendor Details component
+import { FaStar } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUsers } from "../../features/users/userSlice";
+import { fetchVendors } from "../../features/vendors/vendorSlice";
+import VendorDetails from "./components/vendorDetails";
 import Notifications from "./components/notifications"; // Separate Notifications component
 
 export default function VendorManagement() {
-  // Mock data for vendors
-  // const [vendors, setVendors] = useState([
-  //   {
-  //     id: 1,
-  //     name: "Tech Supplies",
-  //     averageRanking: 4.2,
-  //     customerComments: [
-  //       { id: 1, user: "John Doe", comment: "Great service!", ranking: 5 },
-  //       {
-  //         id: 2,
-  //         user: "Jane Smith",
-  //         comment: "Good, but delayed shipping.",
-  //         ranking: 3,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Smart Gadgets",
-  //     averageRanking: 3.8,
-  //     customerComments: [
-  //       { id: 1, user: "Alex Johnson", comment: "Good products!", ranking: 4 },
-  //     ],
-  //   },
-  // ]);
-
-  const [showAddVendorModal, setShowAddVendorModal] = useState(false);
   const [vendorDetails, setVendorDetails] = useState(null);
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
 
   const dispatch = useDispatch();
 
-  // Fetch users (vendors) from Redux store
-  const users = useSelector((state) => state.users.users);
-  const userStatus = useSelector((state) => state.users.status);
-  const error = useSelector((state) => state.users.error);
+  // Fetch vendors from Redux store
+  const vendors = useSelector((state) => state.vendors?.vendors || []);
+  const vendorStatus = useSelector((state) => state.vendors?.status || "idle");
+  const error = useSelector((state) => state.vendors?.error || null);
 
-  // Fetch users (vendors) when component mounts
+  // Debug: Log initial state of vendors
+  console.log("Vendors from Redux state:", vendors);
+  console.log("Vendor fetch status:", vendorStatus);
+  console.log("Error state:", error);
+
+  // Fetch vendors when the component mounts
   useEffect(() => {
-    if (userStatus === "idle") {
-      dispatch(fetchUsers());
+    if (vendorStatus === "idle") {
+      console.log("Dispatching fetchVendors action..."); // Debug: Dispatch action
+      dispatch(fetchVendors()); // Dispatch the fetchVendors action
     }
-  }, [userStatus, dispatch]);
+  }, [vendorStatus, dispatch]);
 
-  // Filter users to display only vendors
-  const vendors = users.filter((user) => user.role === "Vendor");
+  // Ensure vendors is an array before filtering
+  const filteredVendors = Array.isArray(vendors)
+    ? vendors.filter((vendor) =>
+      vendor.userName?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    : [];
 
-  // Filter vendors based on search query
-  const filteredVendors = vendors.filter((vendor) =>
-    vendor.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Debug: Log filtered vendors
+  console.log("Filtered vendors:", filteredVendors);
 
-  // Calculate important statistics
-  const totalVendors = vendors.length;
-  const averageRanking = (
-    vendors.reduce((acc, vendor) => acc + vendor.averageRanking, 0) /
-    vendors.length
-  ).toFixed(1);
+  // Calculate total vendors and average ranking
+  const totalVendors = filteredVendors.length;
+  const averageRanking =
+    filteredVendors.length > 0
+      ? (
+        filteredVendors.reduce((acc, vendor) => acc + vendor.averageRating, 0) /
+        filteredVendors.length
+      ).toFixed(1)
+      : 0;
+
+  // Debug: Log total vendors and average ranking
+  console.log("Total vendors:", totalVendors);
+  console.log("Average ranking:", averageRanking);
 
   return (
     <div>
@@ -86,18 +71,6 @@ export default function VendorManagement() {
 
         {/* Notifications Icon */}
         <Notifications notifications={[]} />
-
-        {/* Add Vendor Button */}
-        {/* <div className="ms-auto">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowAddVendorModal(true)}
-          >
-            <FaPlus className="me-2" />
-            Add New Vendor
-          </Button>
-        </div> */}
       </h2>
 
       {/* Row of Cards for Important Information */}
@@ -110,7 +83,7 @@ export default function VendorManagement() {
             <Card.Body>
               <Card.Title>Total Vendors</Card.Title>
               <Card.Text>
-                <h3>{vendors.length}</h3>
+                <h3>{totalVendors}</h3>
               </Card.Text>
             </Card.Body>
           </Card>
@@ -124,15 +97,7 @@ export default function VendorManagement() {
               <Card.Title>Average Vendor Ranking</Card.Title>
               <Card.Text>
                 <h3>
-                  {vendors.length > 0
-                    ? (
-                        vendors.reduce(
-                          (acc, vendor) => acc + vendor.averageRanking,
-                          0
-                        ) / vendors.length
-                      ).toFixed(1)
-                    : 0}{" "}
-                  <FaStar className="text-warning" />
+                  {averageRanking} <FaStar className="text-warning" />
                 </h3>
               </Card.Text>
             </Card.Body>
@@ -155,69 +120,62 @@ export default function VendorManagement() {
         </Col>
       </Row>
 
-      {/* Table for Vendor Listings */}
-      <Row className="mb-4">
-        <Col md={12}>
-          <Card className="mb-4">
-            <Card.Body>
-              <Card.Title>Vendors</Card.Title>
-
-              {/* Display loading, error, or table of vendors */}
-              {userStatus === "loading" && <p>Loading vendors...</p>}
-              {userStatus === "failed" && <p>Error: {error}</p>}
-              {userStatus === "succeeded" && (
-                <Table striped bordered hover responsive>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Mobile Number</th>
-                      <th>Average Ranking</th>
-                      <th>Comments</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredVendors.map((vendor) => (
-                      <tr key={vendor.id}>
-                        <td>{`${vendor.firstName} ${vendor.lastName}`}</td>{" "}
-                        {/* Display First Name and Last Name */}
-                        <td>{vendor.phoneNumber}</td>
-                        <td>
-                          {vendor.averageRanking || "N/A"}{" "}
-                          <FaStar className="text-warning" />
-                        </td>
-                        <td>
-                          {vendor.comments?.length || 0} Comments
-                          <OverlayTrigger
-                            placement="right"
-                            overlay={
-                              <Tooltip id={`tooltip-${vendor.id}`}>
-                                {vendor.comments && vendor.comments.length > 0
-                                  ? vendor.comments.map((comment) => (
-                                      <div key={comment.id}>
-                                        <strong>{comment.user}:</strong>{" "}
-                                        {comment.comment}{" "}
-                                        <FaStar className="text-warning" />{" "}
-                                        {comment.ranking}
-                                      </div>
-                                    ))
-                                  : "No comments available"}
-                              </Tooltip>
-                            }
-                          >
-                            <Button variant="link" className="p-0 ms-2">
-                              View Comments
-                            </Button>
-                          </OverlayTrigger>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      {/* Display loading, error, or table of vendors */}
+      {vendorStatus === "loading" && <p>Loading vendors...</p>}
+      {vendorStatus === "failed" && <p>Error: {error}</p>}
+      {vendorStatus === "succeeded" && (
+        <Table striped bordered hover responsive>
+          <thead>
+            <tr>
+              <th>User Name</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Mobile Number</th>
+              <th>Average Ranking</th>
+              <th>Comments</th>
+              
+            </tr>
+          </thead>
+          <tbody>
+            {filteredVendors.map((vendor) => (
+              <tr key={vendor.vendorId}>
+                <td>{vendor.userName}</td>
+                <td>{vendor.firstName}</td>
+                <td>{vendor.lastName}</td>
+                <td>{vendor.phoneNumber}</td>
+                <td>
+                  {vendor.averageRating || "N/A"}{" "}
+                  <FaStar className="text-warning" />
+                </td>
+                <td>
+                  {vendor.ratings?.length || 0} Comments
+                  <OverlayTrigger
+                    placement="right"
+                    overlay={
+                      <Tooltip id={`tooltip-${vendor.vendorId}`}>
+                        {vendor.ratings && vendor.ratings.length > 0
+                          ? vendor.ratings.map((rating) => (
+                            <div key={rating.customerId}>
+                              <strong>{rating.customerId}:</strong>{" "}
+                              {rating.comment}{" "}
+                              <FaStar className="text-warning" />{" "}
+                              {rating.rating}
+                            </div>
+                          ))
+                          : "No comments available"}
+                      </Tooltip>
+                    }
+                  >
+                    <Button variant="link" className="p-0 ms-2">
+                      View Comments
+                    </Button>
+                  </OverlayTrigger>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
 
       {/* Add Vendor Modal */}
       {/* <AddVendor
