@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import {
   updateProduct,
   fetchProducts,
-} from "../../../../features/products/productSlice"; // Correct import for updateProduct
+} from "../../../../features/products/productSlice";
 
 const EditProduct = ({ show, onHide, product, onSave, categories }) => {
   const [updatedProduct, setUpdatedProduct] = useState(product);

@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addProduct,
   uploadImage,
-} from "../../../../features/products/productSlice"; // Import actions
-import { fetchCategories } from "../../../../features/category/categorySlice"; // Fetch categories for dropdown
+} from "../../../../features/products/productSlice";
+import { fetchCategories } from "../../../../features/category/categorySlice";
 
 const AddProduct = ({ show, onHide }) => {
   const dispatch = useDispatch();
@@ -54,7 +54,10 @@ const AddProduct = ({ show, onHide }) => {
   // Handle attribute change
   const handleAttributeChange = (index, field, value) => {
     const updatedAttributes = [...newProduct.attributes];
-    updatedAttributes[index] = { ...updatedAttributes[index], [field]: value };
+    updatedAttributes[index] = {
+      ...updatedAttributes[index],
+      [field]: value,
+    };
     setNewProduct({ ...newProduct, attributes: updatedAttributes });
   };
 
@@ -85,8 +88,24 @@ const AddProduct = ({ show, onHide }) => {
     } else {
       // No image selected, just create the product
       dispatch(addProduct(newProduct));
+      resetForm();
       onHide();
     }
+  };
+
+  const resetForm = () => {
+    setNewProduct({
+      productCode: "",
+      name: "",
+      description: "",
+      price: 0,
+      categoryIds: [],
+      attributes: [{ name: "", value: "" }],
+      stockLevel: 0,
+      lowStockThreshold: 0,
+      isFeatured: false,
+      imageFile: null,
+    });
   };
 
   return (

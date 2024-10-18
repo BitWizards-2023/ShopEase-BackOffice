@@ -150,8 +150,11 @@ export default function AdminProductManagement() {
 
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
-        <Col md={3}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#e3f2fd" }}
+          >
             <Card.Body>
               <Card.Title>Total Products</Card.Title>
               <Card.Text>
@@ -160,8 +163,11 @@ export default function AdminProductManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#d0f0c0" }}
+          >
             <Card.Body>
               <Card.Title>Active Products</Card.Title>
               <Card.Text>
@@ -170,8 +176,11 @@ export default function AdminProductManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#fff3cd" }}
+          >
             <Card.Body>
               <Card.Title>Inactive Products</Card.Title>
               <Card.Text>
@@ -180,8 +189,11 @@ export default function AdminProductManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#f8d7da" }}
+          >
             <Card.Body>
               <Card.Title>Total Stock Value</Card.Title>
               <Card.Text>
