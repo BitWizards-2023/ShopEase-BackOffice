@@ -18,13 +18,13 @@ import {
   FaEllipsisV,
 } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
-import AddCategory from "./components/addCategory"; // Separate Add Category component
-import EditCategory from "./components/editCategory"; // Separate Edit Category component
-import CategoryDetails from "./components/detailCategory"; // Separate Category Details component
+import AddCategory from "./components/addCategory";
+import EditCategory from "./components/editCategory";
+import CategoryDetails from "./components/detailCategory";
 import {
   fetchCategories,
   deleteCategory,
-} from "../../../features/category/categorySlice"; // Redux actions
+} from "../../../features/category/categorySlice";
 
 export default function AdminCategoryManagement() {
   const dispatch = useDispatch();
@@ -103,8 +103,11 @@ export default function AdminCategoryManagement() {
 
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
-        <Col md={4}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#f0f8ff" }}
+          >
             <Card.Body>
               <Card.Title>Total Categories</Card.Title>
               <Card.Text>
@@ -113,8 +116,11 @@ export default function AdminCategoryManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#e6ffe6" }}
+          >
             <Card.Body>
               <Card.Title>Active Categories</Card.Title>
               <Card.Text>
@@ -123,8 +129,11 @@ export default function AdminCategoryManagement() {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4}>
-          <Card className="text-center glass-card">
+        <Col md>
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#ffe6e6" }}
+          >
             <Card.Body>
               <Card.Title>Inactive Categories</Card.Title>
               <Card.Text>
