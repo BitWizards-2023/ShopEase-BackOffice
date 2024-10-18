@@ -1,16 +1,35 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../api/axios";
+import { jwtDecode } from "jwt-decode";
 
 // Async thunk to fetch orders
 export const fetchOrders = createAsyncThunk(
   "orders/fetchOrders",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/v1/orders", {
+      // Get the token from local storage
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No token found");
+      }
+
+      // Decode the token to get user information
+      const decodedToken = jwtDecode(token);
+      const { role, vendorId } = decodedToken; // Assuming the token has userRole and vendorId
+
+      // Determine the endpoint based on the user role
+      let endpoint = "/v1/orders";
+      if (role === "Vendor") {
+        endpoint += `/vendor`; // For vendor, use the vendor-specific endpoint
+      }
+
+      // Fetch orders with authorization header
+      const response = await axios.get(endpoint, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+
       return response.data.data; // Adjust this if the API structure is different
     } catch (error) {
       if (!error.response) {
@@ -21,12 +40,21 @@ export const fetchOrders = createAsyncThunk(
   }
 );
 
-// Async thunk to fetch order details by ID (if needed)
-export const fetchOrderById = createAsyncThunk(
-  "orders/fetchOrderById",
-  async (id, { rejectWithValue }) => {
+// Async thunk to update the order item (status and tracking number)
+export const updateOrderItem = createAsyncThunk(
+  "orders/updateOrderItem",
+  async ({ orderId, itemId, status, trackingNumber }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/v1/orders/${id}`);
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `/v1/orders/${orderId}/items/${itemId}`,
+        { status, trackingNumber },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       if (!error.response) {
@@ -59,12 +87,14 @@ const orderSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message;
       })
-      // Handle fetch order by ID
-      .addCase(fetchOrderById.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        // You can implement logic here if needed to store the individual order details
+      // Handle update order item (PUT request)
+      .addCase(updateOrderItem.pending, (state) => {
+        state.status = "loading";
       })
-      .addCase(fetchOrderById.rejected, (state, action) => {
+      .addCase(updateOrderItem.fulfilled, (state, action) => {
+        state.status = "succeeded";
+      })
+      .addCase(updateOrderItem.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       });

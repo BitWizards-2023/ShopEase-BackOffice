@@ -26,18 +26,26 @@ const AddCategory = ({ show, onHide }) => {
 
   const handleSave = () => {
     // Step 1: Upload the image
-    dispatch(uploadImage(newCategory.image)).then(() => {
-      // Step 2: After image is uploaded, create the category with the image URL
-      dispatch(
-        addCategory({
-          name: newCategory.name,
-          isActive: newCategory.status,
-          imageUrl,
-        })
-      );
-      onHide();
+    dispatch(uploadImage(newCategory.image)).then((result) => {
+      console.log("Image upload result:", result); // Check what is returned from the image upload
+      if (result.payload && result.payload.fileUrl) {
+        console.log("Image URL:", result.payload.fileUrl); // Ensure the URL is correct
+        // Step 2: After image is uploaded, create the category with the image URL
+        dispatch(
+          addCategory({
+            name: newCategory.name,
+            isActive: newCategory.status,
+            imageUrl: result.payload.fileUrl, // Use the correct file URL
+          })
+        );
+        onHide(); // Close the modal
+      } else {
+        // Handle image upload failure
+        console.error('Image upload failed');
+      }
     });
   };
+
 
   return (
     <Modal show={show} onHide={onHide}>

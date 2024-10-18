@@ -85,9 +85,26 @@ const AddProduct = ({ show, onHide }) => {
     } else {
       // No image selected, just create the product
       dispatch(addProduct(newProduct));
+      resetForm();
       onHide();
     }
   };
+
+  const resetForm = () => {
+    setNewProduct({
+      productCode: "",
+      name: "",
+      description: "",
+      price: 0,
+      categoryIds: [],
+      attributes: [{ name: "", value: "" }],
+      stockLevel: 0,
+      lowStockThreshold: 0,
+      isFeatured: false,
+      imageFile: null,
+    });
+  };
+
 
   return (
     <Modal show={show} onHide={onHide}>

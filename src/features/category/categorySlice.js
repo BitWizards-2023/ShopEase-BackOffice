@@ -116,6 +116,7 @@ export const addCategory = createAsyncThunk(
     async ({ name, isActive, imageUrl }, { rejectWithValue }) => {
         try {
             const token = localStorage.getItem('token');
+            console.log("Sending category data to backend:", { name, isActive, imageUrl }); // Log the data being sent
             const response = await axios.post(
                 '/Category',
                 {
