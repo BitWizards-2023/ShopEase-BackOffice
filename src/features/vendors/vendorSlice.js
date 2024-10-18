@@ -15,7 +15,7 @@ export const fetchVendors = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             console.log("Fetching vendors from API..."); // Debug: API call initiated
-            const response = await axios.get("/VendorRating/list");
+            const response = await axios.get("/VendorRating/admin/list");
             console.log("Response from API: ", response.data); // Debug: API response
             return Array.isArray(response.data) ? response.data : []; // Ensure the response is an array
         } catch (error) {
