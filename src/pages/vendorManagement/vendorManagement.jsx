@@ -5,22 +5,20 @@ import {
   Col,
   Card,
   Form,
-  OverlayTrigger,
-  Tooltip,
   Button,
-  Dropdown,
   Modal,
+  ListGroup,
 } from "react-bootstrap";
 import { FaStar } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchVendors } from "../../features/vendors/vendorSlice";
-import VendorDetails from "./components/vendorDetails";
+import { fetchVendors, approveRating } from "../../features/vendors/vendorSlice";
 import Notifications from "./components/notifications"; // Separate Notifications component
 
 export default function VendorManagement() {
   const [vendorDetails, setVendorDetails] = useState(null); // State to show vendor details in popup
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
   const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
+  const [commentsStatus, setCommentsStatus] = useState([]); // Status for each comment
 
   const dispatch = useDispatch();
 
@@ -36,6 +34,45 @@ export default function VendorManagement() {
     }
   }, [vendorStatus, dispatch]);
 
+  // Function to initialize the comment status when viewing vendor details
+  const initializeCommentStatus = (vendor) => {
+    setCommentsStatus(
+      vendor.ratings.map((rating) => ({
+        ...rating,
+        status: rating.isApproved ? "Active" : "Inactive",
+      }))
+    );
+  };
+
+  // Function to handle "View More" click and show popup
+  const handleViewMore = (vendor) => {
+    setVendorDetails(vendor); // Set the selected vendor details
+    initializeCommentStatus(vendor); // Initialize status for comments
+    setShowPopup(true); // Show the popup
+  };
+
+  // Close the popup
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setVendorDetails(null);
+  };
+
+  
+  // Save comment status changes (simulated for now)
+  const handleSaveComment = (ratingId) => {
+    // Dispatch the approveRating action with the rating ID
+    dispatch(approveRating(ratingId))
+      .then((result) => {
+        if (result.meta.requestStatus === "fulfilled") {
+          console.log("Rating approved successfully");
+        } else {
+          console.error("Failed to approve rating");
+        }
+      })
+      .catch((error) => {
+        console.error("Error during rating approval:", error);
+      });
+  };
   // Ensure vendors is an array before filtering
   const filteredVendors = Array.isArray(vendors)
     ? vendors.filter((vendor) =>
@@ -54,18 +91,6 @@ export default function VendorManagement() {
           ) / filteredVendors.length
         ).toFixed(1)
       : 0;
-
-  // Function to handle "View More" click and show popup
-  const handleViewMore = (vendor) => {
-    setVendorDetails(vendor); // Set the selected vendor details
-    setShowPopup(true); // Show the popup
-  };
-
-  // Close the popup
-  const handleClosePopup = () => {
-    setShowPopup(false);
-    setVendorDetails(null);
-  };
 
   return (
     <div>
@@ -153,16 +178,13 @@ export default function VendorManagement() {
                 </td>
                 <td>{vendor.ratings?.length || 0} Comments</td>
                 <td>
-                  <Dropdown>
-                    <Dropdown.Toggle variant="secondary" size="sm">
-                      Actions
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                      <Dropdown.Item onClick={() => handleViewMore(vendor)}>
-                        View More
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleViewMore(vendor)}
+                  >
+                    View/Edit
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -188,17 +210,48 @@ export default function VendorManagement() {
               {vendorDetails.averageRating || "N/A"}{" "}
               <FaStar className="text-warning" />
             </p>
+
+            {/* Enhanced Comments Section */}
             <h5>Comments</h5>
-            {vendorDetails.ratings && vendorDetails.ratings.length > 0 ? (
-              vendorDetails.ratings.map((rating) => (
-                <div key={rating.customerId}>
-                  <strong>{rating.customerId}:</strong> {rating.comment}{" "}
-                  <FaStar className="text-warning" /> {rating.rating}
-                </div>
-              ))
-            ) : (
-              <p>No comments available</p>
-            )}
+            <ListGroup>
+              {commentsStatus.length > 0 ? (
+                commentsStatus.map((rating) => (
+                  <ListGroup.Item key={rating.customerId} className="mb-3">
+                    <div className="d-flex justify-content-between">
+                      <div>
+                        <strong>Customer:</strong> {rating.customerId}
+                      </div>
+                      <div>
+                        <FaStar className="text-warning" /> {rating.rating}
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <strong>Comment:</strong> {rating.comment}
+                    </div>
+                  
+                    <small className="text-muted">
+                      Posted on {new Date(rating.createdAt).toLocaleDateString()}
+                    </small>
+
+                    {/* Dropdown for Status Selection */}
+                    <div className="d-flex justify-content-between mt-3">
+                      
+
+                      {/* Save Button */}
+                      <Button
+                        variant="success"
+                        size="sm"
+                        onClick={() => handleSaveComment(rating.id)}
+                      >
+                        Change Status
+                      </Button>
+                    </div>
+                  </ListGroup.Item>
+                ))
+              ) : (
+                <p>No comments available</p>
+              )}
+            </ListGroup>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClosePopup}>
@@ -207,6 +260,7 @@ export default function VendorManagement() {
           </Modal.Footer>
         </Modal>
       )}
+
     </div>
   );
 }

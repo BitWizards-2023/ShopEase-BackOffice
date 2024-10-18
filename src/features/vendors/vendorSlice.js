@@ -7,6 +7,7 @@ const initialState = {
     vendors: [], // Initialize vendors as an array
     status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null, // To store error messages
+    updateStatus: "idle", // Status for updating a rating
 };
 
 // Async thunk for fetching vendors
@@ -14,12 +15,25 @@ export const fetchVendors = createAsyncThunk(
     "vendors/fetchVendors",
     async (_, { rejectWithValue }) => {
         try {
-            console.log("Fetching vendors from API..."); // Debug: API call initiated
             const response = await axios.get("/VendorRating/admin/list");
-            console.log("Response from API: ", response.data); // Debug: API response
-            return Array.isArray(response.data) ? response.data : []; // Ensure the response is an array
+            return Array.isArray(response.data) ? response.data : [];
         } catch (error) {
-            console.error("Error fetching vendors: ", error.response?.data || error); // Debug: API error
+            if (!error.response) {
+                throw error;
+            }
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+// Async thunk for approving a vendor rating
+export const approveRating = createAsyncThunk(
+    "vendors/approveRating",
+    async (ratingId, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(`/VendorRating/approve/${ratingId}`);
+            return response.data; // Success response
+        } catch (error) {
             if (!error.response) {
                 throw error;
             }
@@ -36,18 +50,36 @@ const vendorSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchVendors.pending, (state) => {
-                console.log("Fetching vendors..."); // Debug: fetching in progress
                 state.status = "loading";
             })
             .addCase(fetchVendors.fulfilled, (state, action) => {
-                console.log("Vendors fetched successfully:", action.payload); // Debug: fetched data
                 state.status = "succeeded";
-                state.vendors = action.payload; // Make sure vendors is an array
+                state.vendors = action.payload;
             })
             .addCase(fetchVendors.rejected, (state, action) => {
-                console.error("Failed to fetch vendors:", action.payload); // Debug: fetch failed
                 state.status = "failed";
                 state.error = action.payload?.message || "Failed to fetch vendors";
+            })
+            // For approveRating
+            .addCase(approveRating.pending, (state) => {
+                state.updateStatus = "loading";
+            })
+            .addCase(approveRating.fulfilled, (state, action) => {
+                state.updateStatus = "succeeded";
+                const ratingId = action.meta.arg; // Get rating ID
+                // Find and update the specific rating's status in the state
+                state.vendors = state.vendors.map((vendor) =>
+                ({
+                    ...vendor,
+                    ratings: vendor.ratings.map((rating) =>
+                        rating.id === ratingId ? { ...rating, isApproved: true } : rating
+                    ),
+                })
+                );
+            })
+            .addCase(approveRating.rejected, (state, action) => {
+                state.updateStatus = "failed";
+                state.error = action.payload?.message || "Failed to approve rating";
             });
     },
 });
