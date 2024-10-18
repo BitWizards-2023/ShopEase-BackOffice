@@ -18,7 +18,14 @@ import {
   Dropdown,
   DropdownButton,
 } from "react-bootstrap";
-import { FaPlus, FaEdit, FaTrash, FaEye } from "react-icons/fa";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaEye,
+  FaCheck,
+  FaTimes,
+} from "react-icons/fa";
 import AddUser from "./components/addUser";
 import EditUser from "./components/editUser";
 import Notifications from "./components/notifications";
@@ -219,6 +226,7 @@ export default function UserManagement() {
                     <th>Email</th>
                     <th>Phone Number</th>
                     <th>Role</th>
+                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -242,6 +250,19 @@ export default function UserManagement() {
                       <td>{user.email}</td>
                       <td>{user.phoneNumber}</td>
                       <td>{user.role}</td>
+                      <td>
+                        {user.isActive ? (
+                          <span className="text-success">
+                            <FaCheck className="me-1" />
+                            Active
+                          </span>
+                        ) : (
+                          <span className="text-danger">
+                            <FaTimes className="me-1" />
+                            Inactive
+                          </span>
+                        )}
+                      </td>
                       <td>
                         {/* Action Menu */}
                         <DropdownButton

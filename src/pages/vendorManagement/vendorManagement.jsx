@@ -8,6 +8,8 @@ import {
   OverlayTrigger,
   Tooltip,
   Button,
+  Dropdown,
+  Modal,
 } from "react-bootstrap";
 import { FaStar } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,8 +18,9 @@ import VendorDetails from "./components/vendorDetails";
 import Notifications from "./components/notifications"; // Separate Notifications component
 
 export default function VendorManagement() {
-  const [vendorDetails, setVendorDetails] = useState(null);
+  const [vendorDetails, setVendorDetails] = useState(null); // State to show vendor details in popup
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
+  const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
 
   const dispatch = useDispatch();
 
@@ -26,15 +29,9 @@ export default function VendorManagement() {
   const vendorStatus = useSelector((state) => state.vendors?.status || "idle");
   const error = useSelector((state) => state.vendors?.error || null);
 
-  // Debug: Log initial state of vendors
-  console.log("Vendors from Redux state:", vendors);
-  console.log("Vendor fetch status:", vendorStatus);
-  console.log("Error state:", error);
-
   // Fetch vendors when the component mounts
   useEffect(() => {
     if (vendorStatus === "idle") {
-      console.log("Dispatching fetchVendors action..."); // Debug: Dispatch action
       dispatch(fetchVendors()); // Dispatch the fetchVendors action
     }
   }, [vendorStatus, dispatch]);
@@ -42,26 +39,33 @@ export default function VendorManagement() {
   // Ensure vendors is an array before filtering
   const filteredVendors = Array.isArray(vendors)
     ? vendors.filter((vendor) =>
-      vendor.userName?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+        vendor.userName?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     : [];
-
-  // Debug: Log filtered vendors
-  console.log("Filtered vendors:", filteredVendors);
 
   // Calculate total vendors and average ranking
   const totalVendors = filteredVendors.length;
   const averageRanking =
     filteredVendors.length > 0
       ? (
-        filteredVendors.reduce((acc, vendor) => acc + vendor.averageRating, 0) /
-        filteredVendors.length
-      ).toFixed(1)
+          filteredVendors.reduce(
+            (acc, vendor) => acc + vendor.averageRating,
+            0
+          ) / filteredVendors.length
+        ).toFixed(1)
       : 0;
 
-  // Debug: Log total vendors and average ranking
-  console.log("Total vendors:", totalVendors);
-  console.log("Average ranking:", averageRanking);
+  // Function to handle "View More" click and show popup
+  const handleViewMore = (vendor) => {
+    setVendorDetails(vendor); // Set the selected vendor details
+    setShowPopup(true); // Show the popup
+  };
+
+  // Close the popup
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setVendorDetails(null);
+  };
 
   return (
     <div>
@@ -133,7 +137,7 @@ export default function VendorManagement() {
               <th>Mobile Number</th>
               <th>Average Ranking</th>
               <th>Comments</th>
-              
+              <th>Actions</th> {/* New Actions Column */}
             </tr>
           </thead>
           <tbody>
@@ -147,29 +151,18 @@ export default function VendorManagement() {
                   {vendor.averageRating || "N/A"}{" "}
                   <FaStar className="text-warning" />
                 </td>
+                <td>{vendor.ratings?.length || 0} Comments</td>
                 <td>
-                  {vendor.ratings?.length || 0} Comments
-                  <OverlayTrigger
-                    placement="right"
-                    overlay={
-                      <Tooltip id={`tooltip-${vendor.vendorId}`}>
-                        {vendor.ratings && vendor.ratings.length > 0
-                          ? vendor.ratings.map((rating) => (
-                            <div key={rating.customerId}>
-                              <strong>{rating.customerId}:</strong>{" "}
-                              {rating.comment}{" "}
-                              <FaStar className="text-warning" />{" "}
-                              {rating.rating}
-                            </div>
-                          ))
-                          : "No comments available"}
-                      </Tooltip>
-                    }
-                  >
-                    <Button variant="link" className="p-0 ms-2">
-                      View Comments
-                    </Button>
-                  </OverlayTrigger>
+                  <Dropdown>
+                    <Dropdown.Toggle variant="secondary" size="sm">
+                      Actions
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item onClick={() => handleViewMore(vendor)}>
+                        View More
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </td>
               </tr>
             ))}
@@ -177,20 +170,42 @@ export default function VendorManagement() {
         </Table>
       )}
 
-      {/* Add Vendor Modal */}
-      {/* <AddVendor
-        show={showAddVendorModal}
-        onHide={() => setShowAddVendorModal(false)}
-        onSave={handleAddVendor}
-      /> */}
-
-      {/* Vendor Details Modal */}
+      {/* Popup for viewing more details */}
       {vendorDetails && (
-        <VendorDetails
-          show={!!vendorDetails}
-          onHide={() => setVendorDetails(null)}
-          vendor={vendorDetails}
-        />
+        <Modal show={showPopup} onHide={handleClosePopup} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Vendor Details - {vendorDetails.userName}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <h5>Full Name</h5>
+            <p>
+              {vendorDetails.firstName} {vendorDetails.lastName}
+            </p>
+            <h5>Mobile Number</h5>
+            <p>{vendorDetails.phoneNumber}</p>
+            <h5>Average Rating</h5>
+            <p>
+              {vendorDetails.averageRating || "N/A"}{" "}
+              <FaStar className="text-warning" />
+            </p>
+            <h5>Comments</h5>
+            {vendorDetails.ratings && vendorDetails.ratings.length > 0 ? (
+              vendorDetails.ratings.map((rating) => (
+                <div key={rating.customerId}>
+                  <strong>{rating.customerId}:</strong> {rating.comment}{" "}
+                  <FaStar className="text-warning" /> {rating.rating}
+                </div>
+              ))
+            ) : (
+              <p>No comments available</p>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClosePopup}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
       )}
     </div>
   );
