@@ -1,23 +1,26 @@
-import React, { useState } from "react";
+// components/header/Header.jsx
+import React from "react";
 import { Container, Dropdown, Image, Navbar } from "react-bootstrap";
 import { FaBell } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
+import { markAsRead } from "../../features/notification/notificationsSlice"; // Import the markAsRead action
 
 function Header() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [notifications] = useState([
-    { id: 1, message: "Order #123 has been delivered." },
-    { id: 2, message: "New user registered." },
-    { id: 3, message: "Inventory running low." },
-  ]);
+  // Retrieve notifications from Redux store
+  const notifications = useSelector(
+    (state) => state.notifications.notifications
+  );
 
-  const user = useSelector((state) => state.auth.user);
+  // Calculate the number of unread notifications
+  const unreadCount = notifications.filter((notif) => !notif.read).length;
 
   // Extract user information from the Redux store
+  const user = useSelector((state) => state.auth.user);
   const userName = user ? `${user.firstName} ${user.lastName}` : "User";
   const userEmail = user?.email || "";
   const profileImage = user?.profile_pic || "https://via.placeholder.com/40";
@@ -27,9 +30,15 @@ function Header() {
     navigate("/");
   };
 
+  // Handle marking a notification as read
+  const handleMarkAsRead = (id) => {
+    dispatch(markAsRead(id));
+  };
+
   return (
     <Navbar expand="lg" className="bg-body-tertiary px-3 py-2">
-      <Container fluid className="align-items-center">
+      <Container fluid className="align-items-center justify-content-end">
+        {/* Notification Dropdown */}
         <Dropdown align="end" className="me-3">
           <Dropdown.Toggle
             variant="light"
@@ -37,9 +46,9 @@ function Header() {
             className="p-0"
           >
             <FaBell size={20} />
-            {notifications.length > 0 && (
+            {unreadCount > 0 && (
               <span className="badge bg-danger rounded-circle">
-                {notifications.length}
+                {unreadCount}
               </span>
             )}
           </Dropdown.Toggle>
@@ -50,9 +59,17 @@ function Header() {
               <Dropdown.ItemText>No new notifications.</Dropdown.ItemText>
             ) : (
               notifications.map((notif) => (
-                <Dropdown.ItemText key={notif.id}>
-                  {notif.message}
-                </Dropdown.ItemText>
+                <Dropdown.Item
+                  key={notif.id}
+                  onClick={() => handleMarkAsRead(notif.id)}
+                  style={{
+                    backgroundColor: notif.read ? "#f8f9fa" : "#e9ecef",
+                  }}
+                >
+                  <strong>{notif.title}</strong>
+                  <br />
+                  <small>{notif.body}</small>
+                </Dropdown.Item>
               ))
             )}
           </Dropdown.Menu>
@@ -80,7 +97,9 @@ function Header() {
               Signed in as <strong>{userEmail}</strong>
             </Dropdown.ItemText>
             <Dropdown.Divider />
-            <Dropdown.Item href="/user-profile">Profile Settings</Dropdown.Item>
+            <Dropdown.Item onClick={() => navigate("/user-profile")}>
+              Profile Settings
+            </Dropdown.Item>
             <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>

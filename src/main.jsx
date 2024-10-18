@@ -5,6 +5,8 @@ import App from "./App.jsx";
 import store from "./store/inedex.js"; // Import the store
 import "./index.css";
 
+import * as serviceWorkerRegistration from "./conf/serviceWorkerRegistration.js";
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
@@ -12,3 +14,5 @@ createRoot(document.getElementById("root")).render(
     </Provider>
   </StrictMode>
 );
+
+serviceWorkerRegistration.register();

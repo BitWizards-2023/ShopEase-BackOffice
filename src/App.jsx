@@ -1,3 +1,5 @@
+// src/App.js
+
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Header from "./components/header/header";
@@ -19,6 +21,15 @@ import UserProfile from "./components/userProfile/userProfile";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { loadUserFromToken } from "./features/auth/authSlice";
+
+// Import Firebase and messaging
+import { messaging } from "./conf/firebase"; // Adjust the path to your firebase.js
+import { onMessage } from "./conf/firebase";
+
+// Import the addNotification action
+import { addNotification } from "./features/notification/notificationsSlice";
+
+// Import ProtectedRoute
 import ProtectedRoute from "./utils/ProtectedRoute/ProtectedRoute";
 
 function App() {
@@ -26,6 +37,38 @@ function App() {
 
   useEffect(() => {
     dispatch(loadUserFromToken());
+  }, [dispatch]);
+
+  // Handle foreground FCM messages
+  useEffect(() => {
+    const unsubscribe = onMessage(messaging, (payload) => {
+      console.log("Message received. ", payload);
+      const notification = {
+        id: payload.messageId || new Date().getTime(),
+        title: payload.notification.title,
+        body: payload.notification.body,
+        data: payload.data || {},
+        receivedAt: new Date().toISOString(),
+        read: false,
+      };
+      // Dispatch action to add notification to Redux store
+      dispatch(addNotification(notification));
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [dispatch]);
+
+  // Listener for messages from the service worker
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        if (event.data && event.data.type === "NEW_NOTIFICATION") {
+          dispatch(addNotification(event.data.payload));
+        }
+      });
+    }
   }, [dispatch]);
 
   const routes = [
@@ -46,10 +89,30 @@ function App() {
     <Router>
       <div className="app-container">
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
-          <Route path="/user-profile" element={<UserProfile />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/user-profile"
+            element={
+              <ProtectedRoute path="/user-profile">
+                <>
+                  <Sidebar />
+                  <div className="main-content">
+                    <Header />
+                    <div className="content-area">
+                      <UserProfile />
+                    </div>
+                    <Footer />
+                  </div>
+                </>
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/*"
             element={
