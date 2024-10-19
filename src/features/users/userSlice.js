@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../api/axios";
-
+import { jwtDecode } from "jwt-decode";
 // Async Thunks
 
 // Fetch user list
@@ -82,17 +82,25 @@ export const activateUser = createAsyncThunk(
   "users/activateUser",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/v1/User/${id}/activate`, {
+      console.log("Activating user with ID:", id);  // Debug: Log the user ID
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+
+      const response = await axios.patch(`/v1/User/${id}/activate`, {}, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      console.error("Error activating user:", error.response || error.message);
+      return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }
 );
+
 
 // Approve user
 export const approveUser = createAsyncThunk(

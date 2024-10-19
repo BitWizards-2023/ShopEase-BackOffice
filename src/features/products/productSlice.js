@@ -98,7 +98,6 @@ export const updateProduct = createAsyncThunk(
     }
 );
 
-
 // Async thunk to delete a product
 export const deleteProduct = createAsyncThunk(
     'product/deleteProduct',
@@ -150,6 +149,26 @@ export const deactivateProduct = createAsyncThunk(
                 },
             });
             return response.data;
+        } catch (error) {
+            if (!error.response) {
+                throw error;
+            }
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+// Async thunk to update product stock level
+export const updateProductStockLevel = createAsyncThunk(
+    'product/updateProductStockLevel',
+    async ({ id, updatedProduct }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(`/v1/products/${id}`, updatedProduct, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`, // Authorization header
+                },
+            });
+            return response.data; // Return the updated product
         } catch (error) {
             if (!error.response) {
                 throw error;
@@ -263,6 +282,19 @@ const productSlice = createSlice({
                 }
             })
             .addCase(deactivateProduct.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message;
+            })
+
+            // Handle update product stock level
+            .addCase(updateProductStockLevel.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                const index = state.products.findIndex((product) => product.id === action.meta.arg.id);
+                if (index !== -1) {
+                    state.products[index] = action.payload; // Update the stock level of the product
+                }
+            })
+            .addCase(updateProductStockLevel.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message;
             });

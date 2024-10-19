@@ -9,7 +9,7 @@ import {
   Form,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "../../features/products/productSlice"; // Import the fetch action
+import { fetchProducts, updateProductStockLevel } from "../../features/products/productSlice"; // Import the update action
 import Notifications from "./components/notifications";
 import CreateProduct from "./components/createProduct";
 import "./InventoryManagement.css";
@@ -51,6 +51,12 @@ const InventoryManagement = () => {
   const filteredInventory = products.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Handle removing stock (setting stockLevel to 0)
+  const handleRemoveStock = async (id) => {
+    const updatedProduct = { stockLevel: 0 }; // Set stock level to 0
+    await dispatch(updateProductStockLevel({ id, updatedProduct }));
+  };
 
   return (
     <div>
@@ -197,6 +203,7 @@ const InventoryManagement = () => {
                               variant="danger"
                               size="sm"
                               disabled={item.stockLevel === 0}
+                              onClick={() => handleRemoveStock(item.id)} // Trigger remove stock action
                             >
                               Remove Stock
                             </Button>
