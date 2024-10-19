@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -9,84 +9,27 @@ import {
   Dropdown,
   DropdownButton,
 } from "react-bootstrap";
-import {
-  FaEdit,
-  FaTrash,
-  FaPlus,
-  FaEye,
-  FaEllipsisV,
-  FaBell,
-  FaCheck,
-} from "react-icons/fa";
-import DatePicker from "react-datepicker"; // Make sure to install react-datepicker
+import { FaEdit, FaTrash, FaEye, FaEllipsisV, FaCheck } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchOrders } from "../../../features/orders/orderSlice";
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import AddOrder from "./components/addOrder"; // Separate Add Order component
-import EditOrder from "./components/editOrder"; // Separate Edit Order component
-import OrderDetails from "./components/detailOrder"; // Separate Order Details component
-import CancelOrderModal from "./components/cancelOrder"; // Separate Cancel Order component
-import MarkDeliveredModal from "./components/markDelivered"; // Separate Mark as Delivered component
-import Notifications from "./components/notifications"; // Separate Notifications component
-import OrderReports from "./components/orderReport"; // Order Reports component
+import AddOrder from "./components/addOrder";
+import EditOrder from "./components/editOrder";
+import OrderDetails from "./components/detailOrder";
+import CancelOrderModal from "./components/cancelOrder";
+import MarkDeliveredModal from "./components/markDelivered";
+import OrderReports from "./components/orderReport";
 
-export default function OrderManagement({ userRole }) {
-  // Mock data for orders
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      customerName: "John Doe",
-      totalAmount: 150,
-      status: "Processing",
-      details: "Order for 2 items: Laptop, Headphones.",
-      isMultiVendor: true,
-      date: "2023-10-01",
-      paymentStatus: "Pending",
-      shippingAddress: "123 Main St, City, Country",
-      history: [{ date: "2023-10-01", status: "Processing" }],
-      products: [
-        { name: "Laptop", vendor: "Vendor A", status: "Processing" },
-        { name: "Headphones", vendor: "Vendor B", status: "Processing" },
-      ],
-    },
-    {
-      id: 2,
-      customerName: "Jane Smith",
-      totalAmount: 200,
-      status: "Partially Delivered",
-      details: "Order for 3 items: Smartphone, Tablet, Smartwatch.",
-      isMultiVendor: true,
-      date: "2023-09-15",
-      paymentStatus: "Completed",
-      shippingAddress: "456 Another St, City, Country",
-      history: [
-        { date: "2023-09-15", status: "Processing" },
-        { date: "2023-09-20", status: "Partially Delivered" },
-      ],
-      products: [
-        { name: "Smartphone", vendor: "Vendor A", status: "Delivered" },
-        { name: "Tablet", vendor: "Vendor B", status: "Processing" },
-        { name: "Smartwatch", vendor: "Vendor C", status: "Processing" },
-      ],
-    },
-    {
-      id: 3,
-      customerName: "Alex Johnson",
-      totalAmount: 75,
-      status: "Delivered",
-      details: "Order for 1 item: Headphones.",
-      isMultiVendor: false,
-      date: "2023-08-10",
-      paymentStatus: "Completed",
-      shippingAddress: "789 Example Rd, City, Country",
-      history: [
-        { date: "2023-08-10", status: "Processing" },
-        { date: "2023-08-12", status: "Delivered" },
-      ],
-      products: [
-        { name: "Headphones", vendor: "Vendor A", status: "Delivered" },
-      ],
-    },
-  ]);
+export default function AdminOrderManagement({ userRole }) {
+  const dispatch = useDispatch();
+  const {
+    orders = [],
+    status,
+    error,
+  } = useSelector((state) => state.orders || {});
 
+  // State management for modals and filters
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -94,30 +37,39 @@ export default function OrderManagement({ userRole }) {
   const [showDeliveredModal, setShowDeliveredModal] = useState(false);
   const [editOrder, setEditOrder] = useState(null);
   const [orderDetails, setOrderDetails] = useState(null);
-  const [selectedOrder, setSelectedOrder] = useState(null); // Ensure selected order is initialized
-  const [searchQuery, setSearchQuery] = useState(""); // Search query state
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
+  // Fetch orders when the component mounts
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchOrders());
+    }
+  }, [dispatch, status]);
+
   // Filtered orders based on search query, status, and date range
   const filteredOrders = orders
     .filter((order) => {
-      const matchesSearch =
-        order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.id.toString().includes(searchQuery);
+      const matchesSearch = order.orderNumber
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
       const matchesStatus =
         filterStatus === "" || order.status === filterStatus;
       const matchesDateRange =
-        (!startDate || new Date(order.date) >= startDate) &&
-        (!endDate || new Date(order.date) <= endDate);
+        (!startDate || new Date(order.createdAt) >= startDate) &&
+        (!endDate || new Date(order.createdAt) <= endDate);
 
       return matchesSearch && matchesStatus && matchesDateRange;
     })
     .sort((a, b) => {
-      if (sortBy === "dateAsc") return new Date(a.date) - new Date(b.date);
-      if (sortBy === "dateDesc") return new Date(b.date) - new Date(a.date);
+      if (sortBy === "dateAsc")
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      if (sortBy === "dateDesc")
+        return new Date(b.createdAt) - new Date(a.createdAt);
       if (sortBy === "amountAsc") return a.totalAmount - b.totalAmount;
       if (sortBy === "amountDesc") return b.totalAmount - a.totalAmount;
       return 0;
@@ -125,28 +77,32 @@ export default function OrderManagement({ userRole }) {
 
   // Function to handle adding a new order
   const handleAddOrder = (newOrder) => {
-    setOrders([...orders, { ...newOrder, id: orders.length + 1 }]);
-    setShowAddModal(false); // Close the modal after adding the order
+    // Logic to add a new order, ideally through a Redux action or state update
+    setShowAddModal(false);
   };
 
-  // Function to handle showing the Edit Order Modal
+  // Function to show the Edit Order Modal
   const handleShowEditModal = (order) => {
-    setEditOrder(order); // Set the selected order to edit
-    setShowEditModal(true); // Show the edit modal
+    setEditOrder(order);
+    setShowEditModal(true);
   };
 
-  // Function to handle saving edited order
+  // Function to save the edited order
   const handleSaveEditOrder = (updatedOrder) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === updatedOrder.id ? updatedOrder : order
-      )
-    );
-    setShowEditModal(false); // Close the edit modal after saving the order
+    // Logic to update the order, ideally through a Redux action
+    setShowEditModal(false);
   };
 
-  // Function to handle canceling an order
+  // Function to handle showing the order details modal
+  const handleShowDetailsModal = (order) => {
+    setOrderDetails(order);
+    setShowDetailsModal(true);
+  };
+
+  // Function to cancel an order
   const handleCancelOrder = (orderId, cancelNote) => {
+    // Dispatch the cancel action
+    // Example: dispatch(cancelOrder({ id: orderId, note: cancelNote }));
     setOrders(
       orders.map((order) =>
         order.id === orderId
@@ -154,72 +110,39 @@ export default function OrderManagement({ userRole }) {
           : order
       )
     );
-    setShowCancelModal(false); // Close the cancel order modal after updating
+    setShowCancelModal(false);
   };
 
-  // Function to handle marking an order or individual items as delivered
+  // Function to mark an order as delivered
   const handleMarkAsDelivered = (orderId, productIndex = null) => {
     setOrders((prevOrders) =>
       prevOrders.map((order) => {
         if (order.id === orderId) {
-          // If a specific product is being updated in a multi-vendor order
-          if (productIndex !== null && order.products) {
-            const updatedProducts = [...order.products];
-            updatedProducts[productIndex].status = "Delivered";
+          if (productIndex !== null && order.items) {
+            const updatedItems = [...order.items];
+            updatedItems[productIndex].status = "Delivered";
 
-            // Check if all products in the order are now delivered
-            const allDelivered = updatedProducts.every(
-              (product) => product.status === "Delivered"
+            const allDelivered = updatedItems.every(
+              (item) => item.status === "Delivered"
             );
 
             return {
               ...order,
               status: allDelivered ? "Delivered" : "Partially Delivered",
-              products: updatedProducts,
+              items: updatedItems,
             };
           } else {
-            // If the entire order is being marked as delivered
             return { ...order, status: "Delivered" };
           }
         }
         return order;
       })
     );
-    setShowDeliveredModal(false); // Close the mark as delivered modal after updating
+    setShowDeliveredModal(false);
   };
 
-  const handleShowDetailsModal = (order) => {
-    setOrderDetails(order); // Set the selected order's details
-    setShowDetailsModal(true); // Show the details modal
-  };
-
-  // UI for filtering and sorting
   return (
     <div>
-      {/* Header */}
-      <h2 className="mb-4 d-flex align-items-center">
-        <span className="me-2">Order Management</span>
-
-        {/* Notifications Icon */}
-        <Notifications
-          processingOrders={orders.filter(
-            (order) => order.status === "Processing"
-          )}
-        />
-
-        {/* Add Order Button */}
-        {/* <div className="ms-auto">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowAddModal(true)}
-          >
-            <FaPlus className="me-2" />
-            Add New Order
-          </Button>
-        </div> */}
-      </h2>
-
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
         <Col md={3}>
@@ -275,7 +198,6 @@ export default function OrderManagement({ userRole }) {
           </Card>
         </Col>
       </Row>
-
       {/* Filter and Sort Controls */}
       <Row className="mb-3 d-flex align-items-center justify-content-between">
         <Col md={3}>
@@ -321,7 +243,6 @@ export default function OrderManagement({ userRole }) {
           </Form.Select>
         </Col>
       </Row>
-
       {/* Order Listings Heading with Search Bar */}
       <Row className="mb-4 d-flex align-items-center justify-content-between">
         <Col md={6}>
@@ -336,94 +257,108 @@ export default function OrderManagement({ userRole }) {
           />
         </Col>
       </Row>
-
       {/* Table for Order Listings */}
       <Row className="mb-4">
         <Col md={12}>
           <Card className="mb-4">
             <Card.Body>
-              <Card.Title>Order Listings</Card.Title>
-              <Table striped bordered hover responsive>
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer Name</th>
-                    <th>Total Amount</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.map((order) => (
-                    <tr key={order.id}>
-                      <td>{order.id}</td>
-                      <td>{order.customerName}</td>
-                      <td>${order.totalAmount}</td>
-                      <td>{order.status}</td>
-                      <td>
-                        {/* Action Menu */}
-                        <DropdownButton
-                          variant="link"
-                          title={<FaEllipsisV />}
-                          id={`dropdown-${order.id}`}
-                          align="end"
-                        >
-                          <Dropdown.Item
-                            onClick={() => handleShowDetailsModal(order)}
-                          >
-                            <FaEye className="me-2" />
-                            View Details
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleShowEditModal(order)}
-                          >
-                            <FaEdit className="me-2" />
-                            Edit
-                          </Dropdown.Item>
-                          {(userRole === "Administrator" ||
-                            userRole === "CSR") && (
-                            <Dropdown.Item
-                              onClick={() => handleShowCancelModal(order)}
-                              disabled={
-                                order.status === "Delivered" ||
-                                order.status === "Canceled"
-                              } // Disable cancel for delivered or already canceled orders
-                            >
-                              <FaTrash className="me-2" />
-                              Cancel Order
-                            </Dropdown.Item>
-                          )}
-                          {(userRole === "Administrator" ||
-                            userRole === "CSR" ||
-                            userRole === "Vendor") && (
-                            <Dropdown.Item
-                              onClick={() => handleShowDeliveredModal(order)}
-                            >
-                              <FaCheck className="me-2" />
-                              Mark as Delivered
-                            </Dropdown.Item>
-                          )}
-                        </DropdownButton>
-                      </td>
+              {status === "loading" ? (
+                <p>Loading orders...</p>
+              ) : status === "failed" ? (
+                <p>Error: {error}</p>
+              ) : (
+                <Table striped bordered hover responsive>
+                  <thead>
+                    <tr>
+                      <th>Order Number</th>
+                      <th>Total Amount</th>
+                      <th>Payment Status</th>
+                      <th>Order Status</th>
+                      <th>Shipping Address</th>
+                      <th>Order Date</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.map((order) => (
+                      <tr key={order.id}>
+                        <td>{order.orderNumber}</td>
+                        <td>${order.totalAmount.toFixed(2)}</td>
+                        <td>{order.paymentStatus}</td>
+                        <td>{order.status}</td>
+                        <td>
+                          {`${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.country}`}
+                        </td>
+                        <td>
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <DropdownButton
+                            variant="link"
+                            title={<FaEllipsisV />}
+                            id={`dropdown-${order.id}`}
+                            align="end"
+                          >
+                            <Dropdown.Item
+                              onClick={() => handleShowDetailsModal(order)}
+                            >
+                              <FaEye className="me-2" />
+                              View Details
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => handleShowEditModal(order)}
+                            >
+                              <FaEdit className="me-2" />
+                              Edit
+                            </Dropdown.Item>
+                            {(userRole === "Administrator" ||
+                              userRole === "CSR") && (
+                              <Dropdown.Item
+                                onClick={() => {
+                                  setSelectedOrder(order);
+                                  setShowCancelModal(true);
+                                }}
+                                disabled={
+                                  order.status === "Delivered" ||
+                                  order.status === "Canceled"
+                                }
+                              >
+                                <FaTrash className="me-2" />
+                                Cancel Order
+                              </Dropdown.Item>
+                            )}
+                            {(userRole === "Administrator" ||
+                              userRole === "CSR" ||
+                              userRole === "Vendor") && (
+                              <Dropdown.Item
+                                onClick={() => {
+                                  setSelectedOrder(order);
+                                  setShowDeliveredModal(true);
+                                }}
+                              >
+                                <FaCheck className="me-2" />
+                                Mark as Delivered
+                              </Dropdown.Item>
+                            )}
+                          </DropdownButton>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
             </Card.Body>
           </Card>
         </Col>
       </Row>
-
       {/* Order Reports Section */}
-      <OrderReports orders={orders} />
-
+      <OrderReports orders={orders} /> {/* Pass orders as props */}
       {/* Add Order Modal */}
       <AddOrder
         show={showAddModal}
         onHide={() => setShowAddModal(false)}
         onSave={handleAddOrder}
       />
-
       {/* Edit Order Modal */}
       <EditOrder
         show={showEditModal}
@@ -431,14 +366,12 @@ export default function OrderManagement({ userRole }) {
         order={editOrder}
         onSave={handleSaveEditOrder}
       />
-
       {/* Order Details Modal */}
       <OrderDetails
         show={showDetailsModal}
         onHide={() => setShowDetailsModal(false)}
         order={orderDetails}
       />
-
       {/* Cancel Order Modal */}
       <CancelOrderModal
         show={showCancelModal}
@@ -446,7 +379,6 @@ export default function OrderManagement({ userRole }) {
         order={selectedOrder}
         onCancel={handleCancelOrder}
       />
-
       {/* Mark as Delivered Modal */}
       <MarkDeliveredModal
         show={showDeliveredModal}

@@ -37,7 +37,11 @@ const permissions = {
         label: "Inventory Management",
         icon: "FaWarehouse",
       },
-      // Add more routes as needed
+      {
+        path: "/admin/order-management",
+        label: "Order Management",
+        icon: "FaShoppingCart",
+      },
     ],
     components: [
       "AdminUserManagement",

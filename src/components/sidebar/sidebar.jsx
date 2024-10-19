@@ -9,6 +9,7 @@ import {
   FaUsers,
   FaCog,
   FaBook,
+  FaShoppingCart,
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
@@ -55,6 +56,7 @@ const Sidebar = () => {
     FaWarehouse: <FaWarehouse className="me-2" />,
     FaUsers: <FaUsers className="me-2" />,
     FaBook: <FaBook className="me-2" />,
+    FaShoppingCart: <FaShoppingCart className="me-2" />,
   };
 
   const handleToggle = () => {

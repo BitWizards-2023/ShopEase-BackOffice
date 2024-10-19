@@ -17,6 +17,7 @@ import AdminProductManagement from "./pages/Admin/productManagement/productManag
 import AdminVendorManagement from "./pages/Admin/vendorManagement/vendorManagement";
 import AdminInventoryManagement from "./pages/Admin/inventoryManagement/inventoryManagement";
 import UserProfile from "./components/userProfile/userProfile";
+import AdminOrderManagement from "./pages/Admin/orderManagement/orderManagement";
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -79,6 +80,7 @@ function App() {
     { path: "/admin/category", element: <AdminCategoryManagement /> },
     { path: "/admin/product", element: <AdminProductManagement /> },
     { path: "/admin/vendor-management", element: <AdminVendorManagement /> },
+    { path: "/admin/order-management", element: <AdminOrderManagement /> },
     {
       path: "/admin/inventory-management",
       element: <AdminInventoryManagement />,
