@@ -20,6 +20,7 @@ const AddUser = ({ show, onHide, onSave }) => {
       postalCode: "",
       country: "",
     },
+    isActive: true,
   });
 
   // Handle input changes for general fields
