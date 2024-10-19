@@ -9,11 +9,13 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { updateOrderItem } from "../../../features/orders/orderSlice"; // Import the new thunk for updating order items
+import { updateOrderItem, cancelOrder } from "../../../features/orders/orderSlice"; // Import the thunk for cancelling orders
 
 const EditOrder = ({ show, onHide, order }) => {
   const [updatedOrder, setUpdatedOrder] = useState(order);
   const [isSaving, setIsSaving] = useState({}); // Loading state for individual items
+  const [isCancelling, setIsCancelling] = useState(false); // Loading state for cancelling the order
+  const [cancelReason, setCancelReason] = useState(""); // Store the reason for cancellation
   const dispatch = useDispatch();
 
   // Reset the displayed order data when a new order is selected
@@ -57,6 +59,21 @@ const EditOrder = ({ show, onHide, order }) => {
     }
   };
 
+  // Handle order cancellation
+  const handleCancelOrder = async () => {
+    setIsCancelling(true);
+
+    try {
+      // Dispatch the action to cancel the order via DELETE request
+      await dispatch(cancelOrder({ orderId: updatedOrder.id, reason: cancelReason }));
+      onHide(); // Close the modal once the order is canceled
+    } catch (error) {
+      console.error("Failed to cancel the order:", error);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   return (
     <Modal show={show} onHide={onHide} size="md">
       <Modal.Header closeButton>
@@ -81,12 +98,39 @@ const EditOrder = ({ show, onHide, order }) => {
               {updatedOrder?.orderNumber || "N/A"}
             </p>
             <p>
-              <strong>Total Amount:</strong> $
-              {updatedOrder?.totalAmount || "0.00"}
+              <strong>Total Amount:</strong> ${updatedOrder?.totalAmount || "0.00"}
             </p>
           </Col>
         </Row>
         <hr />
+        {/* Cancelling Notes Section */}
+        {updatedOrder?.internalNotes && updatedOrder.internalNotes.length > 0 && (
+          <>
+            <Row>
+              <Col md={12}>
+                <h5>Cancelling Notes</h5>
+                <ListGroup>
+                  {updatedOrder.internalNotes.map((note, index) => (
+                    <ListGroup.Item key={index}>
+                      <p>
+                        <strong>Note:</strong> {note.note}
+                      </p>
+                      <p>
+                        <strong>Added By:</strong> {note.addedBy}
+                      </p>
+                      <p>
+                        <strong>Added At:</strong>{" "}
+                        {new Date(note.addedAt).toLocaleString()}
+                      </p>
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              </Col>
+            </Row>
+            <hr />
+          </>
+        )}
+        {/* Product Details Section */}
         <Row>
           <Col md={12}>
             <h5>Product Details</h5>
@@ -166,6 +210,42 @@ const EditOrder = ({ show, onHide, order }) => {
             ) : (
               <p>No products in this order.</p>
             )}
+          </Col>
+        </Row>
+        <hr />
+        {/* Cancel Order Section */}
+        <Row>
+          <Col md={12}>
+            <h5>Cancel Order</h5>
+            <Form.Group className="mb-3">
+              <Form.Label>Reason for Cancellation</Form.Label>
+              <Form.Control
+                as="textarea"
+                placeholder="Enter reason for cancellation"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+              />
+            </Form.Group>
+            <Button
+              variant="danger"
+              onClick={handleCancelOrder}
+              disabled={isCancelling || !cancelReason} // Disable button if cancellation is in progress or reason is empty
+            >
+              {isCancelling ? (
+                <>
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />{" "}
+                  Cancelling...
+                </>
+              ) : (
+                "Cancel Order"
+              )}
+            </Button>
           </Col>
         </Row>
       </Modal.Body>
