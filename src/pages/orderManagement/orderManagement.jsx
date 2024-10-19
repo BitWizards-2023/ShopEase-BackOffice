@@ -156,7 +156,12 @@ export default function OrderManagement({ userRole }) {
       {/* Row of Cards for Important Information */}
       <Row className="mb-4">
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#e3f2fd" }}
+          >
+            {" "}
+            {/* Light Blue */}
             <Card.Body>
               <Card.Title>Total Orders</Card.Title>
               <Card.Text>
@@ -166,7 +171,12 @@ export default function OrderManagement({ userRole }) {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#fff3cd" }}
+          >
+            {" "}
+            {/* Light Yellow */}
             <Card.Body>
               <Card.Title>Processing Orders</Card.Title>
               <Card.Text>
@@ -181,7 +191,12 @@ export default function OrderManagement({ userRole }) {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#d4edda" }}
+          >
+            {" "}
+            {/* Light Green */}
             <Card.Body>
               <Card.Title>Delivered Orders</Card.Title>
               <Card.Text>
@@ -196,7 +211,12 @@ export default function OrderManagement({ userRole }) {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center glass-card">
+          <Card
+            className="text-center glass-card"
+            style={{ backgroundColor: "#f8d7da" }}
+          >
+            {" "}
+            {/* Light Red */}
             <Card.Body>
               <Card.Title>Canceled Orders</Card.Title>
               <Card.Text>
@@ -270,97 +290,95 @@ export default function OrderManagement({ userRole }) {
       {/* Table for Order Listings */}
       <Row className="mb-4">
         <Col md={12}>
-          <Card className="mb-4">
-            <Card.Body>
-              {status === "loading" ? (
-                <p>Loading orders...</p>
-              ) : status === "failed" ? (
-                <p>Error: {error}</p>
-              ) : (
-                <Table striped bordered hover responsive>
-                  <thead>
-                    <tr>
-                      <th>Order Number</th>
-                      <th>Customer Name</th>
-                      <th>Total Amount</th>
-                      <th>Payment Status</th>
-                      <th>Order Status</th>
-                      <th>Shipping Address</th>
-                      <th>Order Date</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredOrders.map((order) => (
-                      <tr key={order.id}>
-                        <td>{order.orderNumber}</td>
-                        <td>{order.customerName || "N/A"}</td>
-                        <td>${order.totalAmount.toFixed(2)}</td>
-                        <td>{order.paymentStatus}</td>
-                        <td>{order.status}</td>
-                        <td>
-                          {`${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.country}`}
-                        </td>
-                        <td>
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </td>
-                        <td>
-                          <DropdownButton
-                            variant="link"
-                            title={<FaEllipsisV />}
-                            id={`dropdown-${order.id}`}
-                            align="end"
+          {/* <Card className="mb-4">
+            <Card.Body> */}
+          {status === "loading" ? (
+            <p>Loading orders...</p>
+          ) : status === "failed" ? (
+            <p>Error: {error}</p>
+          ) : (
+            <Table striped bordered hover responsive>
+              <thead>
+                <tr>
+                  <th>Order Number</th>
+                  <th>Customer Name</th>
+                  <th>Total Amount</th>
+                  <th>Payment Status</th>
+                  <th>Order Status</th>
+                  <th>Shipping Address</th>
+                  <th>Order Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td>{order.orderNumber}</td>
+                    <td>{order.customerName || "N/A"}</td>
+                    <td>${order.totalAmount.toFixed(2)}</td>
+                    <td>{order.paymentStatus}</td>
+                    <td>{order.status}</td>
+                    <td>
+                      {`${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.country}`}
+                    </td>
+                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <DropdownButton
+                        variant="link"
+                        title={<FaEllipsisV />}
+                        id={`dropdown-${order.id}`}
+                        align="end"
+                      >
+                        <Dropdown.Item
+                          onClick={() => handleShowDetailsModal(order)}
+                        >
+                          <FaEye className="me-2" />
+                          View Details
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => handleShowEditModal(order)}
+                        >
+                          <FaEdit className="me-2" />
+                          Edit
+                        </Dropdown.Item>
+                        {(userRole === "Administrator" ||
+                          userRole === "CSR") && (
+                          <Dropdown.Item
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowCancelModal(true);
+                            }}
+                            disabled={
+                              order.status === "Delivered" ||
+                              order.status === "Canceled"
+                            }
                           >
-                            <Dropdown.Item
-                              onClick={() => handleShowDetailsModal(order)}
-                            >
-                              <FaEye className="me-2" />
-                              View Details
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() => handleShowEditModal(order)}
-                            >
-                              <FaEdit className="me-2" />
-                              Edit
-                            </Dropdown.Item>
-                            {(userRole === "Administrator" ||
-                              userRole === "CSR") && (
-                              <Dropdown.Item
-                                onClick={() => {
-                                  setSelectedOrder(order);
-                                  setShowCancelModal(true);
-                                }}
-                                disabled={
-                                  order.status === "Delivered" ||
-                                  order.status === "Canceled"
-                                }
-                              >
-                                <FaTrash className="me-2" />
-                                Cancel Order
-                              </Dropdown.Item>
-                            )}
-                            {(userRole === "Administrator" ||
-                              userRole === "CSR" ||
-                              userRole === "Vendor") && (
-                              <Dropdown.Item
-                                onClick={() => {
-                                  setSelectedOrder(order);
-                                  setShowDeliveredModal(true);
-                                }}
-                              >
-                                <FaCheck className="me-2" />
-                                Mark as Delivered
-                              </Dropdown.Item>
-                            )}
-                          </DropdownButton>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              )}
-            </Card.Body>
-          </Card>
+                            <FaTrash className="me-2" />
+                            Cancel Order
+                          </Dropdown.Item>
+                        )}
+                        {(userRole === "Administrator" ||
+                          userRole === "CSR" ||
+                          userRole === "Vendor") && (
+                          <Dropdown.Item
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowDeliveredModal(true);
+                            }}
+                          >
+                            <FaCheck className="me-2" />
+                            Mark as Delivered
+                          </Dropdown.Item>
+                        )}
+                      </DropdownButton>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+          {/* </Card.Body>
+          </Card> */}
         </Col>
       </Row>
       {/* Order Reports Section */}

@@ -18,14 +18,7 @@ import {
   Dropdown,
   DropdownButton,
 } from "react-bootstrap";
-import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaEye,
-  FaCheck,
-  FaTimes,
-} from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaEye, FaEllipsisV } from "react-icons/fa";
 import AddUser from "./components/addUser";
 import EditUser from "./components/editUser";
 import Notifications from "./components/notifications";
@@ -213,101 +206,91 @@ export default function UserManagement() {
       {/* Table for User Listings */}
       <Row className="mb-4">
         <Col md={12}>
-          <Card className="mb-4">
-            <Card.Body>
-              <Card.Title>Users</Card.Title>
-              <Table striped bordered hover responsive>
-                <thead>
-                  <tr>
-                    <th>Profile Picture</th>
-                    <th>Username</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Email</th>
-                    <th>Phone Number</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id}>
-                      <td>
-                        <img
-                          src={user.profile_pic}
-                          alt={user.firstName}
-                          style={{
-                            width: "50px",
-                            height: "50px",
-                            borderRadius: "50%",
-                          }}
-                        />
-                      </td>
-                      <td>{user.username}</td>
-                      <td>{user.firstName}</td>
-                      <td>{user.lastName}</td>
-                      <td>{user.email}</td>
-                      <td>{user.phoneNumber}</td>
-                      <td>{user.role}</td>
-                      <td>
-                        {user.isActive ? (
-                          <span className="text-success">
-                            <FaCheck className="me-1" />
-                            Active
-                          </span>
-                        ) : (
-                          <span className="text-danger">
-                            <FaTimes className="me-1" />
-                            Inactive
-                          </span>
-                        )}
-                      </td>
-                      <td>
-                        {/* Action Menu */}
-                        <DropdownButton
-                          variant="link"
-                          title="Actions"
-                          id={`dropdown-${user.id}`}
-                          align="end"
-                        >
-                          <Dropdown.Item
-                            onClick={() => {
-                              setEditUser(user);
-                              setShowEditUserModal(true);
-                            }}
-                          >
-                            <FaEdit className="me-2" />
-                            Edit
-                          </Dropdown.Item>
-                          <Dropdown.Item>
-                            <FaEye className="me-2" />
-                            View More
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleDeleteUser(user.id)}
-                          >
-                            <FaTrash className="me-2" />
-                            Delete
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleActivateUser(user.id)}
-                          >
-                            Activate
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleApproveUser(user.id)}
-                          >
-                            Approve
-                          </Dropdown.Item>
-                        </DropdownButton>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
+          {/* <Card className="mb-4">
+            <Card.Body> */}
+          {/* <Card.Title>Users</Card.Title> */}
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th style={{ width: "10px" }}>#</th>
+                <th style={{ width: "150px" }}>Username</th>
+                <th style={{ width: "100px" }}>First Name</th>
+                <th style={{ width: "100px" }}>Last Name</th>
+                <th style={{ width: "150px" }}>Email</th>
+                <th style={{ width: "100px" }}>Phone Number</th>
+                <th style={{ width: "50px" }}>Role</th>
+                <th style={{ width: "50px" }}>Status</th>
+                <th style={{ width: "10px" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.map((user) => (
+                <tr key={user.id}>
+                  <td style={{ width: "10px" }}>
+                    <img
+                      src={user.profile_pic}
+                      alt={user.firstName}
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </td>
+                  <td style={{ width: "150px" }}>{user.username}</td>
+                  <td style={{ width: "100px" }}>{user.firstName}</td>
+                  <td style={{ width: "100px" }}>{user.lastName}</td>
+                  <td style={{ width: "150px" }}>{user.email}</td>
+                  <td style={{ width: "100px" }}>{user.phoneNumber}</td>
+                  <td style={{ width: "50px" }}>{user.role}</td>
+                  <td style={{ width: "50px" }}>
+                    {user.isActive ? (
+                      <span className="text-success">Active</span>
+                    ) : (
+                      <span className="text-danger">Inactive</span>
+                    )}
+                  </td>
+                  <td style={{ width: "10px" }}>
+                    {/* Action Menu */}
+                    <DropdownButton
+                      variant="link"
+                      title={<FaEllipsisV />} // Replace text with icon
+                      id={`dropdown-${user.id}`}
+                      align="end"
+                    >
+                      <Dropdown.Item
+                        onClick={() => {
+                          setEditUser(user);
+                          setShowEditUserModal(true);
+                        }}
+                      >
+                        <FaEdit className="me-2" />
+                        Edit
+                      </Dropdown.Item>
+                      <Dropdown.Item>
+                        <FaEye className="me-2" />
+                        View More
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={() => handleDeleteUser(user.id)}>
+                        <FaTrash className="me-2" />
+                        Delete
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => handleActivateUser(user.id)}
+                      >
+                        Activate
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={() => handleApproveUser(user.id)}>
+                        Approve
+                      </Dropdown.Item>
+                    </DropdownButton>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          {/* </Card.Body>
+          </Card> */}
         </Col>
       </Row>
 

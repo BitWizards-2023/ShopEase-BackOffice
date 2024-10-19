@@ -222,139 +222,139 @@ export default function ProductManagement() {
       {/* Table for Product Listings */}
       <Row className="mb-4">
         <Col md={12}>
-          <Card className="mb-4">
-            <Card.Body>
-              <Table striped bordered hover responsive>
-                <thead>
-                  <tr>
-                    <th>Image</th>
-                    <th>Product Code</th>
-                    <th>Product Name</th>
-                    <th>Description</th>
-                    <th>Price</th>
-                    <th>Category</th>
-                    <th>Stock Level</th>
-                    <th>Low Stock Threshold</th>
-                    <th>Featured</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.length > 0 ? (
-                    filteredProducts.map((product) => (
-                      <tr key={product.id}>
-                        <td>
-                          <img
-                            src={product.images[0]}
-                            alt={product.name}
-                            style={{ width: "50px", height: "50px" }}
-                          />
-                        </td>
-                        <td>{product.productCode}</td>
-                        <td>{product.name}</td>
-                        <td>{product.description}</td>
-                        <td>${product.price}</td>
-                        {/* Map categoryIds to category names */}
-                        <td>
-                          {product.categoryIds.map((categoryId) => (
-                            <span key={categoryId}>
-                              {getCategoryName(categoryId)}
-                            </span>
-                          ))}
-                        </td>
-                        <td>{product.stockLevel}</td>
-                        <td>{product.lowStockThreshold}</td>
-                        <td>
-                          {product.isFeatured ? (
-                            <span className="text-success">
-                              <FaCheck className="me-1" />
-                              Featured
-                            </span>
-                          ) : (
-                            <span className="text-danger">
-                              <FaTimes className="me-1" />
-                              Not Featured
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          {product.isActive ? (
-                            <span className="text-success">
-                              <FaCheck className="me-1" />
-                              Active
-                            </span>
-                          ) : (
-                            <span className="text-danger">
-                              <FaTimes className="me-1" />
-                              Inactive
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          {/* Action Menu */}
-                          <DropdownButton
-                            variant="link"
-                            title={<FaEllipsisV />}
-                            id={`dropdown-${product.id}`}
-                            align="end"
-                          >
-                            <Dropdown.Item
-                              onClick={() => {
-                                setEditProduct(product); // Set the selected product to edit
-                                setShowEditModal(true); // Show the edit modal
-                              }}
-                            >
-                              <FaEdit className="me-2" />
-                              Edit
-                            </Dropdown.Item>
+          {/* <Card className="mb-4">
+            <Card.Body> */}
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Product Code</th>
+                <th>Product Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Stock Level</th>
+                <th>Low Stock Threshold</th>
+                <th>Featured</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <tr key={product.id}>
+                    <td>
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        style={{ width: "50px", height: "50px" }}
+                      />
+                    </td>
+                    <td>{product.productCode}</td>
+                    <td>{product.name}</td>
+                    <td>{product.description}</td>
+                    <td>${product.price}</td>
+                    {/* Map categoryIds to category names */}
+                    <td>
+                      {product.categoryIds.map((categoryId) => (
+                        <span key={categoryId}>
+                          {getCategoryName(categoryId)}
+                        </span>
+                      ))}
+                    </td>
+                    <td>{product.stockLevel}</td>
+                    <td>{product.lowStockThreshold}</td>
+                    <td>
+                      {product.isFeatured ? (
+                        <span className="text-success">
+                          <FaCheck className="me-1" />
+                          Featured
+                        </span>
+                      ) : (
+                        <span className="text-danger">
+                          <FaTimes className="me-1" />
+                          Not Featured
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {product.isActive ? (
+                        <span className="text-success">
+                          <FaCheck className="me-1" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="text-danger">
+                          <FaTimes className="me-1" />
+                          Inactive
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {/* Action Menu */}
+                      <DropdownButton
+                        variant="link"
+                        title={<FaEllipsisV />}
+                        id={`dropdown-${product.id}`}
+                        align="end"
+                      >
+                        <Dropdown.Item
+                          onClick={() => {
+                            setEditProduct(product); // Set the selected product to edit
+                            setShowEditModal(true); // Show the edit modal
+                          }}
+                        >
+                          <FaEdit className="me-2" />
+                          Edit
+                        </Dropdown.Item>
 
-                            <Dropdown.Item
-                              onClick={() => handleDeleteProduct(product.id)}
-                            >
-                              <FaTrash className="me-2" />
-                              Delete
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() =>
-                                handleToggleStatus(product.id, product.isActive)
-                              }
-                            >
-                              {product.isActive ? (
-                                <>
-                                  <FaTimes className="me-2" />
-                                  Deactivate
-                                </>
-                              ) : (
-                                <>
-                                  <FaCheck className="me-2" />
-                                  Activate
-                                </>
-                              )}
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() => {
-                                setProductDetails(product); // Set the selected product to display
-                                setShowDetailsModal(true); // Show the details modal
-                              }}
-                            >
-                              View Details
-                            </Dropdown.Item>
-                          </DropdownButton>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="11" className="text-center">
-                        No products found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
+                        <Dropdown.Item
+                          onClick={() => handleDeleteProduct(product.id)}
+                        >
+                          <FaTrash className="me-2" />
+                          Delete
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() =>
+                            handleToggleStatus(product.id, product.isActive)
+                          }
+                        >
+                          {product.isActive ? (
+                            <>
+                              <FaTimes className="me-2" />
+                              Deactivate
+                            </>
+                          ) : (
+                            <>
+                              <FaCheck className="me-2" />
+                              Activate
+                            </>
+                          )}
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => {
+                            setProductDetails(product); // Set the selected product to display
+                            setShowDetailsModal(true); // Show the details modal
+                          }}
+                        >
+                          View Details
+                        </Dropdown.Item>
+                      </DropdownButton>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="11" className="text-center">
+                    No products found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+          {/* </Card.Body>
+          </Card> */}
         </Col>
       </Row>
 

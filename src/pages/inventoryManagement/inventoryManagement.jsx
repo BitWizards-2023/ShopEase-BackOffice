@@ -141,80 +141,68 @@ const InventoryManagement = () => {
       {/* Inventory Table */}
       <Row>
         <Col md={12}>
-          <Card className="mb-4">
-            <Card.Body>
-              {productStatus === "loading" ? (
-                <p>Loading products...</p>
-              ) : productStatus === "failed" ? (
-                <p>Error: {error}</p>
-              ) : (
-                <Table striped bordered hover responsive>
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Product Code</th>
-                      <th>Product Name</th>
-                      <th>Price</th>
-                      <th>Stock Level</th>
-                      <th>Low Stock Threshold</th>
-                      <th>Featured</th>
-                      <th>Actions</th>
+          {/* <Card className="mb-4">
+            <Card.Body> */}
+          {productStatus === "loading" ? (
+            <p>Loading products...</p>
+          ) : productStatus === "failed" ? (
+            <p>Error: {error}</p>
+          ) : (
+            <Table striped bordered hover responsive>
+              <thead>
+                <tr>
+                  <th style={{ width: "10px" }}>#</th>
+                  <th style={{ width: "10px" }}>Product Code</th>
+                  <th style={{ width: "150px" }}>Product Name</th>
+                  <th style={{ width: "10px" }}>Price</th>
+                  <th style={{ width: "100px" }}>Stock Level</th>
+                  <th style={{ width: "10px" }}>Low Stock Threshold</th>
+                  <th style={{ width: "10px" }}>Featured</th>
+                  <th style={{ width: "10px" }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredInventory.length > 0 ? (
+                  filteredInventory.map((item, index) => (
+                    <tr key={item.id}>
+                      <td style={{ width: "10px" }}>{index + 1}</td>
+                      <td style={{ width: "10px" }}>{item.productCode}</td>
+                      <td style={{ width: "150px" }}>{item.name}</td>
+                      <td style={{ width: "10px" }}>${item.price}</td>
+                      <td style={{ width: "100px" }}>{item.stockLevel}</td>
+                      <td style={{ width: "10px" }}>
+                        {item.lowStockThreshold}
+                      </td>
+                      <td style={{ width: "10px" }}>
+                        {item.isFeatured ? (
+                          <span className="text-success">Yes</span>
+                        ) : (
+                          <span className="text-danger">No</span>
+                        )}
+                      </td>
+                      <td style={{ width: "10px" }} s>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          disabled={item.stockLevel === 0}
+                        >
+                          Remove Stock
+                        </Button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {filteredInventory.length > 0 ? (
-                      filteredInventory.map((item, index) => (
-                        <tr key={item.id}>
-                          <td>{index + 1}</td>
-                          <td>{item.productCode}</td>
-                          <td>{item.name}</td>
-                          <td>${item.price}</td>
-                          <td>
-                            {item.stockLevel}
-                            <ProgressBar
-                              now={
-                                (item.stockLevel / item.lowStockThreshold) * 100
-                              }
-                              variant={
-                                item.stockLevel <= item.lowStockThreshold
-                                  ? "danger"
-                                  : "success"
-                              }
-                              label={`${item.stockLevel}`}
-                              className="mt-2"
-                            />
-                          </td>
-                          <td>{item.lowStockThreshold}</td>
-                          <td>
-                            {item.isFeatured ? (
-                              <span className="text-success">Yes</span>
-                            ) : (
-                              <span className="text-danger">No</span>
-                            )}
-                          </td>
-                          <td>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              disabled={item.stockLevel === 0}
-                            >
-                              Remove Stock
-                            </Button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="9" className="text-center">
-                          No products found.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </Table>
-              )}
-            </Card.Body>
-          </Card>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9" className="text-center">
+                      No products found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          )}
+          {/* </Card.Body>
+          </Card> */}
         </Col>
       </Row>
     </div>

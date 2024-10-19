@@ -131,7 +131,7 @@ export default function VendorManagement() {
         <Table striped bordered hover responsive>
           <thead>
             <tr>
-              <th>User Name</th>
+              <th style={{ width: "150px" }}>User Name</th>
               <th>First Name</th>
               <th>Last Name</th>
               <th>Mobile Number</th>
@@ -143,7 +143,7 @@ export default function VendorManagement() {
           <tbody>
             {filteredVendors.map((vendor) => (
               <tr key={vendor.vendorId}>
-                <td>{vendor.userName}</td>
+                <td style={{ width: "150px" }}>{vendor.userName}</td>
                 <td>{vendor.firstName}</td>
                 <td>{vendor.lastName}</td>
                 <td>{vendor.phoneNumber}</td>

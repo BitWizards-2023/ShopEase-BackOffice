@@ -162,72 +162,72 @@ export default function CategoryManagement() {
       {/* Table for Category Listings */}
       <Row className="mb-4">
         <Col md={12}>
-          <Card className="mb-4">
-            <Card.Body>
-              {error && <p className="text-danger">Error: {error}</p>}
-              <Table striped bordered hover responsive>
-                <thead>
-                  <tr>
-                    <th>Category ID</th>
-                    <th>Category Name</th>
-                    <th>Image</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCategories.length > 0 ? (
-                    filteredCategories.map((category, index) => (
-                      <tr key={category.id}>
-                        <td>{index + 1}</td>
-                        <td>{category.name}</td>
-                        <td>
-                          {category.imageUrl ? (
-                            <a
-                              href={category.imageUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              View Image
-                            </a>
-                          ) : (
-                            "No Image"
-                          )}
-                        </td>
-                        <td>
-                          {category.isActive ? (
-                            <span className="text-success">
-                              <FaCheck className="me-1" />
-                              Active
-                            </span>
-                          ) : (
-                            <span className="text-danger">
-                              <FaTimes className="me-1" />
-                              Inactive
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          {/* Action Menu */}
-                          <DropdownButton
-                            variant="link"
-                            title={<FaEllipsisV />}
-                            id={`dropdown-${category.id}`}
-                            align="end"
-                          >
-                            <Dropdown.Item
-                              onClick={() => handleShowEditModal(category)}
-                            >
-                              <FaEdit className="me-2" />
-                              Edit
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() => handleDeleteCategory(category.id)}
-                            >
-                              <FaTrash className="me-2" />
-                              Delete
-                            </Dropdown.Item>
-                            {/* <Dropdown.Item>
+          {/* <Card className="mb-4">
+            <Card.Body> */}
+          {error && <p className="text-danger">Error: {error}</p>}
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>Category ID</th>
+                <th>Category Name</th>
+                <th>Image</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCategories.length > 0 ? (
+                filteredCategories.map((category, index) => (
+                  <tr key={category.id}>
+                    <td>{index + 1}</td>
+                    <td>{category.name}</td>
+                    <td>
+                      {category.imageUrl ? (
+                        <a
+                          href={category.imageUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          View Image
+                        </a>
+                      ) : (
+                        "No Image"
+                      )}
+                    </td>
+                    <td>
+                      {category.isActive ? (
+                        <span className="text-success">
+                          <FaCheck className="me-1" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="text-danger">
+                          <FaTimes className="me-1" />
+                          Inactive
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {/* Action Menu */}
+                      <DropdownButton
+                        variant="link"
+                        title={<FaEllipsisV />}
+                        id={`dropdown-${category.id}`}
+                        align="end"
+                      >
+                        <Dropdown.Item
+                          onClick={() => handleShowEditModal(category)}
+                        >
+                          <FaEdit className="me-2" />
+                          Edit
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => handleDeleteCategory(category.id)}
+                        >
+                          <FaTrash className="me-2" />
+                          Delete
+                        </Dropdown.Item>
+                        {/* <Dropdown.Item>
                               {category.isActive ? (
                                 <>
                                   <FaTimes className="me-2" />
@@ -245,21 +245,21 @@ export default function CategoryManagement() {
                             >
                               View Details
                             </Dropdown.Item> */}
-                          </DropdownButton>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="text-center">
-                        No categories found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
+                      </DropdownButton>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center">
+                    No categories found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+          {/* </Card.Body>
+          </Card> */}
         </Col>
       </Row>
 
